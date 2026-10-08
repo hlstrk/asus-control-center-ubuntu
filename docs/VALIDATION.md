@@ -1,4 +1,4 @@
-# Validation for 1.5.0
+# Validation for 1.6.0
 
 Test hardware: ASUS TUF A15 FA507NV, AMD Radeon 680M and NVIDIA RTX 4060,
 Ubuntu 24.04, GNOME 46, X11, kernel 7.0.0-31-generic.
@@ -84,3 +84,22 @@ attestation; telemetry tests do not establish resistance to every possible attac
   Quit App exits, and the ASUS key starts a fresh process afterwards.
 - Guardian audio and transcription user services remained active during the GUI,
   package and panel reload tests.
+
+## 1.6.0 compatibility and installer
+
+- Native locked build on Ubuntu 22.04.5, GCC 11 and glibc 2.35. Package ABI check
+  confirms no executable requires a newer glibc; dependency metadata says >= 2.35.
+- The same .deb installs with native apt in isolated 22.04 and 26.04 roots.
+  GUI `--version` and asusctl `--help` succeed on glibc 2.35 and 2.43.
+- Legacy helper tests pass on GJS 1.72.4; modern helpers and installer tests pass on
+  Ubuntu 26.04 / GJS 1.88.0. Nine installer tests cover LTS mapping, unsupported OS/
+  architecture/hardware, portable chassis, low storage, logging redaction,
+  checksum ambiguity and incompatible libc metadata.
+- Real read-only preflight passes on the 24.04 host and both isolated roots with
+  a test target account. Logs are private, local, and do not dump environment data.
+- Native namespace build roots do not have a running desktop or systemd init.
+  Package service startup is skipped there; full GUI/session integration is not
+  validated on physical 22.04 or 26.04 hardware. Headless asusd-user/shutdown help
+  invocation requires D-Bus and is not used as a successful compatibility test.
+- Earlier physical hardware tests describe 24.04 behavior, not a claim that every
+  feature works on an older ASUS kernel. Hosted CI still faces the billing block.

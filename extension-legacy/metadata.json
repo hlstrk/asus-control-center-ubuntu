@@ -3,8 +3,7 @@
   "name": "ASUS Control Center",
   "description": "ASUS performance profiles, keyboard RGB, hardware readings and AC notifications for Ubuntu.",
   "shell-version": [
-    "46",
-    "50"
+    "42"
   ],
   "url": "https://github.com/hlstrk/asus-control-center-ubuntu",
   "version": 6

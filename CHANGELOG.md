@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.6.0
+
+- Portable Ubuntu 22.04 glibc baseline build, with ELF ABI validation.
+- GNOME 42 legacy panel and GNOME 46/50 modern panel selection.
+- Ubuntu 22.04/24.04/26.04 installer policy, ASUS/portable chassis detection,
+  existing-package checks, storage checks and apt dependency simulation.
+- Read-only preflight and private local redacted debug logs; no diagnostic upload.
+- Refuse incompatible libc packages, broken dpkg state, shadowed installations,
+  conflicting owners and package removal plans.
+- Updated compatibility matrix and oldest-base build / LTS runtime CI.
+- Remapped new binary source locations so local home/build paths are not embedded.
+
 ## 1.5.0
 
 - Adaptive lighting effect tiles; separate LED brightness and HSV value labels.

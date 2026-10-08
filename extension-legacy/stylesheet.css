@@ -1,0 +1,32 @@
+.asus-panel-box { spacing: 6px; }
+.asus-panel-box StLabel { font-size: 11px; font-weight: 700; }
+.asus-body { width: 390px; spacing: 20px; padding: 14px 12px 8px; }
+.asus-heading { spacing: 16px; }
+.asus-title { font-size: 19px; font-weight: 700; color: #f4f1e9; }
+.asus-subtitle { font-size: 9px; font-weight: 600; color: #aaa69e; padding-top: 7px; }
+.asus-heading-icon { icon-size: 24px; color: #efb66a; }
+.asus-selector { background-color: #151719; border: 1px solid #46433e; border-radius: 10px; }
+.asus-highlight { background-color: #efb66a; border-radius: 7px; }
+.asus-profile { color: #c8c4bd; font-size: 11px; font-weight: 600; border-radius: 7px; }
+.asus-profile:hover { color: #ffffff; background-color: rgba(255,255,255,0.06); }
+.asus-profile:focus { box-shadow: inset 0 0 0 2px #ffffff; }
+.asus-profile-active { color: #251a0d; }
+.asus-profile-active:hover { color: #251a0d; background-color: transparent; }
+.asus-profile-icon { icon-size: 21px; padding-bottom: 5px; }
+.asus-hint { color: #b4afa7; font-size: 11px; }
+.asus-footer { spacing: 8px; color: #ded8ce; font-size: 12px; padding-top: 2px; }
+.asus-power-icon { icon-size: 18px; color: #efb66a; }
+.asus-open-button { padding: 6px; border-radius: 6px; }
+.asus-open-button:hover, .asus-open-button:focus { background-color: rgba(239,182,106,0.12); }
+.asus-meters { spacing: 9px; padding-top: 12px; border-top: 1px solid #ffffff22; }
+.asus-meter-row { spacing: 16px; }
+.asus-meter-label { font-size: 12px; color: #b8bdc5; }
+.asus-meter-value { font-size: 12px; font-weight: 700; color: #f4f1e9; }
+
+.asus-lighting { spacing: 8px; padding-top: 12px; border-top: 1px solid #ffffff22; }
+.asus-lighting-row { spacing: 6px; }
+.asus-rgb-choice { padding: 7px 10px; border-radius: 6px; background-color: #24292e; color: #e0e2e5; font-size: 11px; }
+.asus-rgb-choice:hover, .asus-rgb-choice:focus { box-shadow: inset 0 0 0 1px #efb66a; }
+.asus-rgb-active { background-color: #efb66a; color: #251a0d; }
+.asus-rgb-swatch { padding: 8px; border-radius: 6px; background-color: #24292e; }
+.asus-rgb-swatch:hover, .asus-rgb-swatch:focus { box-shadow: inset 0 0 0 2px #f4f1e9; }

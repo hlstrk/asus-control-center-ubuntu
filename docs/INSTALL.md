@@ -1,7 +1,9 @@
-# Install on Ubuntu 24.04
+# Install on Ubuntu 22.04, 24.04 and 26.04 LTS
 
 The verified system is an ASUS TUF A15 FA507NV running GNOME Shell 46, X11,
 and kernel 7.0.0-31-generic. The upstream recommendation is Linux 6.19 or newer.
+The GNOME 42 and 50 compatibility code and portable ABI have additional checks;
+see [the compatibility matrix](COMPATIBILITY.md) for their validation scope.
 Other ASUS models expose different controls; this is not a promise of universal support.
 
 ## One script
@@ -9,10 +11,11 @@ Other ASUS models expose different controls; this is not a promise of universal 
 From your normal desktop account, run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hlstrk/asus-control-center-ubuntu/v1.5.0/scripts/install.sh -o /tmp/asus-control-install.sh && sudo bash /tmp/asus-control-install.sh
+curl -fsSL https://raw.githubusercontent.com/hlstrk/asus-control-center-ubuntu/v1.6.0/scripts/install.sh -o /tmp/asus-control-install.sh && sudo bash /tmp/asus-control-install.sh
 ```
 
-The script validates Ubuntu package checksums, installs the `.deb` using apt,
+The script checks OS, architecture, ASUS hardware, disk space, existing packages,
+active desktop and libc compatibility, then validates package checksums and installs using apt,
 starts asusd and enables the panel for `SUDO_USER`. It preserves other extensions
 and leaves your kernel, NVIDIA driver and GPU mode unchanged. The package manages
 installed files and removal; the script removes its download scratch directory.
@@ -20,7 +23,7 @@ installed files and removal; the script removes its download scratch directory.
 For an offline install, download the matching `.deb` and run:
 
 ```bash
-sudo bash scripts/install.sh --package ~/Downloads/asus-control-center_1.5.0_amd64.deb
+sudo bash scripts/install.sh --package ~/Downloads/asus-control-center_1.6.0_amd64.deb
 ```
 
 A root SSH session can explicitly set `INSTALL_USER` to the target desktop user.
@@ -103,3 +106,25 @@ Read-only kernel status remains visible even when the daemon is stopped.
 Remove the panel with `asus-control-panel-remove`. Remove the desktop package
 with `sudo apt remove asus-control-center` if desired. Keep a copy of `/etc/asusd`
 if you want to preserve your profiles before making further configuration changes.
+
+## Read-only preflight and local debug
+
+```bash
+bash scripts/install.sh --check
+bash scripts/install.sh --check --package ~/Downloads/asus-control-center_1.6.0_amd64.deb
+sudo bash scripts/install.sh --no-panel
+```
+
+`--check` creates only a local diagnostic log; it does not install packages or
+change services/settings. Use `--allow-non-asus` only for compatibility/VM testing.
+Missing GUI/ASUS kernel features are not repaired by replacing the kernel.
+
+Logs: normal account `~/.local/state/asus-control-center/install-logs`, sudo
+`/var/log/asus-control-center`. Directory mode 0700, log mode 0600. Root logs require
+sudo to read. Values resembling home paths, IPs, credentials and authenticated URLs
+are redacted. Logs stay on the PC and are never sent to any service.
+
+If apt would remove packages, dpkg is partly configured, another package owns the
+ASUS controls, or a local binary shadows the package, installation stops for review.
+The installer does not purge existing software, run autoremove or unlock/downgrade
+held drivers. It never launches the desktop application automatically.

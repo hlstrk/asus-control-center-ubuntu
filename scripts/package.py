@@ -1,13 +1,22 @@
 #!/usr/bin/env python3
 """Package a locally built asusctl workspace and the GNOME panel companion."""
-import argparse,hashlib,json,shutil,subprocess,tempfile
+import argparse,hashlib,json,shutil,subprocess,tempfile,re
 from pathlib import Path
 
 repo = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
 parser.add_argument('--target', type=Path, default=repo/'vendor/asusctl/target/release')
-parser.add_argument('--version', default='1.5.0')
+parser.add_argument('--version', default='1.6.0')
+parser.add_argument('--portable', action='store_true', help='Require an Ubuntu 22.04-compatible glibc baseline')
 args = parser.parse_args()
+required = (2,35)
+for name in ['asusctl','asusd','asusd-user','asus-shutdown','rog-control-center']:
+    output = subprocess.check_output(['readelf','--version-info',str(args.target/name)],text=True)
+    versions = [tuple(map(int,v.split('.'))) for v in re.findall(r'GLIBC_([0-9]+\.[0-9]+(?:\.[0-9]+)?)',output)]
+    required = max([required,*versions])
+if args.portable and required > (2,35):
+    raise SystemExit('Portable packages must be built on Ubuntu 22.04 (glibc 2.35); refusing a newer ABI.')
+glibc_floor = '.'.join(map(str,required))
 source = repo/'vendor/asusctl'
 dist = repo/'dist';dist.mkdir(exist_ok=True)
 with tempfile.TemporaryDirectory(prefix='asus-deb-') as tmp:
@@ -35,7 +44,8 @@ with tempfile.TemporaryDirectory(prefix='asus-deb-') as tmp:
     for file in args.target.parent.glob('release/build/rog-control-center-*/out/translations/*/LC_MESSAGES/*.mo'):
         install(file,'usr/share/locale/'+file.parents[1].name+'/LC_MESSAGES/'+file.name)
     # Ship the extension as a template. Enabling it is a per-user action.
-    shutil.copytree(repo/'extension',stage/'usr/share/asus-control-center/extension')
+    for variant in ('extension','extension-legacy'):
+        shutil.copytree(repo/variant,stage/'usr/share/asus-control-center'/variant,ignore=shutil.ignore_patterns('__pycache__'))
     for src, name in [('install-panel.sh', 'asus-control-panel-install'), ('uninstall-panel.sh', 'asus-control-panel-remove'), ('install.sh', 'asus-control-install'), ('shortcut.py', 'asus-control-shortcut'), ('../extension/lighting.py', 'asus-control-lighting')]:
         dest = stage/'usr/bin'/name
         shutil.copy2(repo/'scripts'/src, dest)
@@ -43,8 +53,9 @@ with tempfile.TemporaryDirectory(prefix='asus-deb-') as tmp:
     (control/'control').write_text(f'''Package: asus-control-center
 Version: {args.version}
 Architecture: amd64
+Installed-Size: {sum(p.stat().st_size for p in (stage/'usr').rglob('*') if p.is_file())//1024 + 1}
 Maintainer: hlstrk <hlstrk@users.noreply.github.com>
-Depends: curl, ca-certificates, xdg-utils, python3, python3-gi, libc6 (>= 2.39), libgcc-s1, libfontconfig1, libudev1, libusb-1.0-0, libxkbcommon0, libxkbcommon-x11-0, libwayland-client0
+Depends: curl, ca-certificates, xdg-utils, python3, python3-gi, libc6 (>= {glibc_floor}), libgcc-s1, libfontconfig1, libudev1, libusb-1.0-0, libxkbcommon0, libxkbcommon-x11-0, libwayland-client0
 Conflicts: asusctl-local
 Replaces: asusctl-local
 Homepage: https://github.com/hlstrk/asus-control-center-ubuntu
@@ -72,7 +83,10 @@ fi
     subprocess.run(['dpkg-deb','--root-owner-group','--build',str(stage),str(package)],check=True)
     print(package)
 with tempfile.TemporaryDirectory(prefix='asus-panel-zip-') as tmp:
-    shutil.copytree(repo/'extension',Path(tmp)/'panel')
+    shutil.copytree(repo/'extension',Path(tmp)/'panel',ignore=shutil.ignore_patterns('__pycache__'))
     shutil.make_archive(str(dist/'asus-control-center@hlstrk.shell-extension'),'zip',Path(tmp)/'panel')
-artifacts=[package,dist/'asus-control-center@hlstrk.shell-extension.zip']
+with tempfile.TemporaryDirectory(prefix='asus-panel-legacy-zip-') as tmp:
+    shutil.copytree(repo/'extension-legacy',Path(tmp)/'panel',ignore=shutil.ignore_patterns('__pycache__'))
+    shutil.make_archive(str(dist/'asus-control-center-gnome42.shell-extension'),'zip',Path(tmp)/'panel')
+artifacts=[package,dist/'asus-control-center@hlstrk.shell-extension.zip',dist/'asus-control-center-gnome42.shell-extension.zip']
 (dist/'SHA256SUMS').write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n' for p in artifacts))

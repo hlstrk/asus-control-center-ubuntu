@@ -7,7 +7,7 @@ use std::sync::{Mutex, OnceLock, mpsc};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use serde::{Deserialize, Serialize};
 
-pub const APP_VERSION: &str = "1.5.0";
+pub const APP_VERSION: &str = "1.6.0";
 // Halis Türk: I did not have a separate domain for this project, so the collector
 // uses my existing domain. Its only purpose here is optional compatibility
 // statistics and safe error codes to improve this application. No recordings or

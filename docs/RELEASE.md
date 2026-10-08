@@ -1,48 +1,57 @@
-# ASUS Control Center for Ubuntu 1.5.0
+# ASUS Control Center for Ubuntu 1.6.0
 
-Keyboard effects now behave like the performance selector: choose an icon tile
-and the color, speed and direction controls below adapt to that effect. LED level
-and HSV color value have distinct labels.
+One portable package now targets Ubuntu 22.04, 24.04 and 26.04 LTS on amd64.
+It is built on Ubuntu 22.04’s glibc 2.35 baseline; all five ELF binaries are checked
+before packaging. Older Ubuntu machines no longer receive a binary requiring 2.39.
 
-## Cooling, preferences and the ASUS key
+## Installer
 
-- Compact fan editor with separate profile and CPU/GPU selection. Dragging edits
-  a draft; Apply writes it and Discard reloads the saved curve. Unsupported fans
-  are hidden. Selecting a curve profile preserves the current platform profile.
-- Preferences are grouped into startup/window, ASUS key, notifications and optional
-  statistics, with explanations beside each switch.
-- GNOME 46 uses a native ASUS/ROG key binding when the global-shortcut portal is
-  unavailable. The key can start the app after Quit App, hide/reopen the window
-  and restore it from minimized state. Other custom shortcuts are preserved.
+The installer detects Ubuntu release, architecture, ASUS manufacturer/model and
+portable chassis/battery, GNOME version, existing ASUS installations and available
+disk space. It validates checksums and libc requirements, simulates apt dependencies
+and refuses plans that remove packages. Broken dpkg configuration and shadowing
+local installations are reported before installation.
 
-## Keyboard shortcuts and panel RGB
+Every run creates a private **local** debug log. Home paths, IP addresses and
+credential-like values are masked. There is no log upload or environment/serial
+number dump, and the installer does not launch the app or send statistics.
+`--check` performs preflight without changing packages, services or settings.
+`--no-panel` installs desktop controls without adding another desktop environment.
+The installer does not change the OS release, kernel, NVIDIA driver or GPU mode.
 
-The Armoury Crate key opens or hides the control center. Aura cycles supported
-effects. Both use native GNOME bindings without grabbing input devices. The panel
-adds brightness levels, Static/Breathe/Rainbow and six accessible color swatches;
-presets select Static and keep the existing local daemon as the source of truth.
+## Desktop panels
 
-## Optional compatibility statistics
-
-A first-run question defaults to sending nothing until the user explicitly agrees.
-With consent, normal reports are limited to three attempts per day and safe error
-codes to five. No names, physical hardware IDs, recordings, paths or raw logs are
-sent. A random installation credential authenticates requests to the development statistics service.
-The collector validates fields, deduplicates events, enforces daily quotas and
-request limits, and retains report counters for about 30 days.
-The choice is editable in App Settings. See the README privacy documentation.
+GNOME 42 uses a generated legacy module/notification implementation; GNOME 46 and
+50 use the modern panel. Both retain profiles, hardware readings, RGB controls and
+native key shortcuts. Existing UI and upstream credits are preserved.
 
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hlstrk/asus-control-center-ubuntu/v1.5.0/scripts/install.sh -o /tmp/asus-control-install.sh && sudo bash /tmp/asus-control-install.sh
+curl -fsSL https://raw.githubusercontent.com/hlstrk/asus-control-center-ubuntu/v1.6.0/scripts/install.sh -o /tmp/asus-control-install.sh && sudo bash /tmp/asus-control-install.sh
 ```
 
-The installer verifies checksums, installs the apt-managed package and sets up the
-GNOME panel for your account. Assets include the amd64 .deb, extension and checksums.
-The README has real lighting/fan interaction GIFs, screenshots and the GPU guide.
+Read-only check:
 
-Tested on Ubuntu 24.04 / GNOME 46 / X11 / ASUS TUF A15 FA507NV with Radeon 680M and
-RTX 4060. Wayland, Intel graphics and other laptop models remain unvalidated.
-Original asusctl/MPL-2.0 attribution is preserved; Ubuntu edition by Halis Türk
-(@hlstrk). Independent community project, not an official ASUS application.
+```bash
+bash /tmp/asus-control-install.sh --check
+```
+
+User-check logs: `~/.local/state/asus-control-center/install-logs`.
+Sudo-install logs: `/var/log/asus-control-center` (sudo needed to read).
+
+## Validation and limits
+
+Native Ubuntu 22.04 build; package installation and GUI-version/CLI smoke checks
+in isolated 22.04 and 26.04 roots. Legacy helpers exercised on GJS 1.72; modern
+helpers on GJS 1.88. Installer policy, disk, redaction and libc refusal tests passed.
+Packages and extension archives were scanned with ClamAV. New binaries use generic
+source locations instead of the developer’s home path.
+
+Physical hardware/UI validation remains the Ubuntu 24.04 / GNOME 46 / X11 TUF A15.
+No physical GNOME 42/50 desktop validation is claimed. Older kernels may lack newer
+ASUS attributes; upstream recommends 6.19+. Isolated daemon startup is not tested
+without system D-Bus/systemd. See the compatibility matrix in the README.
+
+Ubuntu edition maintained by Halis Türk (@hlstrk); original asusctl/MPL-2.0 credits
+remain intact. Independent community project, not an official ASUS application.

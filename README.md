@@ -25,16 +25,37 @@ AC/battery switching.
 Run one installer from your desktop account:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hlstrk/asus-control-center-ubuntu/v1.5.0/scripts/install.sh -o /tmp/asus-control-install.sh && sudo bash /tmp/asus-control-install.sh
+curl -fsSL https://raw.githubusercontent.com/hlstrk/asus-control-center-ubuntu/v1.6.0/scripts/install.sh -o /tmp/asus-control-install.sh && sudo bash /tmp/asus-control-install.sh
 ```
 
 It downloads and verifies the versioned Ubuntu package, installs it with apt and
 adds the panel to your own account. On X11, restart the shell with Alt+F2 → `r` →
 Enter. On Wayland, sign out and back in when ready. It does not reboot the laptop.
 
-The `.deb` remains useful: apt tracks installed files, upgrades and removal, while
-the script handles the per-user panel setup. You do not need to download it manually.
-[Packages](packages/v1.5.0) · [Illustrated guide](docs/INSTALL.md) · [Source build](docs/INSTALL.md#build-from-source)
+The installer checks Ubuntu 22.04 / 24.04 / 26.04 LTS, amd64 architecture,
+ASUS manufacturer/model, free space, existing installations and package dependencies.
+It selects the GNOME 42 legacy panel or the GNOME 46/50 modern panel. Other desktops
+can install the GUI with `--no-panel`; a desktop environment is never installed for you.
+
+Read-only checks (no sudo required):
+
+```bash
+bash /tmp/asus-control-install.sh --check
+```
+
+Every run writes a **private local debug log**. Nothing is uploaded, no environment
+or serial-number dump is collected, and paths/IP/token-like values are masked.
+User checks log under `~/.local/state/asus-control-center/install-logs`; sudo installs
+log under `/var/log/asus-control-center`. The installer does not launch the GUI or
+send development statistics. It does not upgrade your OS, kernel or NVIDIA driver.
+
+The portable package is built on Ubuntu 22.04’s glibc baseline. Its ABI is checked
+when packaging and again before installation; incompatible packages are refused.
+Hardware controls still depend on the laptop and kernel. See the exact validation
+scope before treating another laptop/desktop as tested.
+
+[Packages](packages/v1.6.0) · [Illustrated guide](docs/INSTALL.md) ·
+[Compatibility and checks](docs/COMPATIBILITY.md)
 
 ## Basic and Advanced
 

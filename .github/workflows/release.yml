@@ -1,36 +1,85 @@
-name: Build and release Ubuntu package
+name: Build and validate Ubuntu LTS package
 on:
   push:
     tags: ['v*']
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 jobs:
-  release:
+  build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    container: ubuntu:22.04
+    timeout-minutes: 60
     steps:
+      - name: Build dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git curl ca-certificates build-essential cmake pkg-config libudev-dev libusb-1.0-0-dev libfontconfig1-dev libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev gettext python3-gi gjs binutils
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Install build dependencies
+      - name: Rust toolchain
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake pkg-config libudev-dev libusb-1.0-0-dev libfontconfig1-dev libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev gettext python3-gi gjs
-          rustup toolchain install 1.93.0 --profile minimal
-      - name: Verify panel behavior
+          curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs -o /tmp/rustup.sh
+          sh /tmp/rustup.sh -y --profile minimal --default-toolchain 1.93.0
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - name: Installer and panel checks
         run: |
+          python3 tests/installer_test.py
+          python3 scripts/generate-legacy-panel.py
+          git diff --exit-code -- extension-legacy
+          gjs tests/legacy-panel.js
           gjs -m tests/profiles.js
+          python3 tests/telemetry_test.py
           bash -n scripts/*.sh
-          python3 -m py_compile scripts/package.py
-      - name: Build Ubuntu package
+      - name: Build on the oldest supported glibc
+        shell: bash
         run: |
           if [ "$GITHUB_REF_TYPE" = tag ]; then export VERSION="${GITHUB_REF_NAME#v}"; fi
+          export RUSTFLAGS="--remap-path-prefix=$GITHUB_WORKSPACE=/usr/src/asus-control-center --remap-path-prefix=$HOME/.cargo=/usr/src/cargo"
+          export PORTABLE_BUILD=1 BUILD_JOBS=2
           ./scripts/build.sh
       - name: GPU regression tests
+        run: cargo test --manifest-path vendor/asusctl/Cargo.toml --release --locked -p rog_platform gpu_pci::tests
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ubuntu-packages
+          path: dist/
+  compatibility:
+    needs: build
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        ubuntu: ['22.04', '24.04', '26.04']
+    container: ubuntu:${{ matrix.ubuntu }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ubuntu-packages
+          path: dist/
+      - name: Native package and helper smoke checks
         run: |
-          cd vendor/asusctl
-          cargo test --release --locked -p rog_platform gpu_pci::tests
-      - name: Publish tagged release
-        if: startsWith(github.ref, 'refs/tags/')
+          apt-get update
+          apt-get install -y --no-install-recommends gjs
+          apt-get install -y ./dist/*.deb
+          rog-control-center --version
+          asusctl --help
+          python3 tests/installer_test.py
+          gjs -m tests/profiles.js
+          gjs tests/legacy-panel.js
+  release:
+    needs: [build, compatibility]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ubuntu-packages
+          path: dist/
+      - name: Publish validated package
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
