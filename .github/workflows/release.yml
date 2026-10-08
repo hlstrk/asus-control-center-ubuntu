@@ -22,7 +22,9 @@ jobs:
           bash -n scripts/*.sh
           python3 -m py_compile scripts/package.py
       - name: Build Ubuntu package
-        run: ./scripts/build.sh
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then export VERSION="${GITHUB_REF_NAME#v}"; fi
+          ./scripts/build.sh
       - name: Publish tagged release
         if: startsWith(github.ref, 'refs/tags/')
         env:

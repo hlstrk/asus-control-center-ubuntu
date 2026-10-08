@@ -22,14 +22,15 @@ Follow the [screen-by-screen installation guide](docs/INSTALL.md). The panel req
 GNOME Shell 46. The tested combination is Ubuntu 24.04, X11 and a TUF A15 FA507NV.
 Upstream recommends Linux 6.19 or newer.
 
+Download the [Ubuntu package](packages/v1.0.1/asus-control-center_1.0.1_amd64.deb), then:
+
 ```bash
-./scripts/build.sh
-sudo apt install ./dist/asus-control-center_1.0.0_amd64.deb
-./scripts/install-panel.sh
+sudo apt install ~/Downloads/asus-control-center_1.0.1_amd64.deb
+asus-control-panel-install
 ```
 
-Install the dependencies and Rust toolchain listed in the guide first. On X11,
-restart the shell with Alt+F2 → `r` → Enter. On Wayland, sign out and back in.
+On X11, restart the shell with Alt+F2 → `r` → Enter. On Wayland, sign out and back in.
+The [source build instructions](docs/INSTALL.md#build-from-source) remain available.
 
 ## Screenshots
 
@@ -41,6 +42,8 @@ restart the shell with Alt+F2 → `r` → Enter. On Wayland, sign out and back i
 
 ![Fan curves with labels on hover](docs/images/desktop-fan-curves.png)
 
+![Native notification preview](docs/images/power-notification-preview.png)
+
 ## Development
 
 ```bash
@@ -48,7 +51,7 @@ gjs -m tests/profiles.js
 bash -n scripts/*.sh
 ```
 
-[Design notes](docs/DESIGN.md) · [Contributing](CONTRIBUTING.md) · [License](LICENSE)
+[Validation](docs/VALIDATION.md) · [Design notes](docs/DESIGN.md) · [Contributing](CONTRIBUTING.md) · [License](LICENSE)
 
 ## Credits
 

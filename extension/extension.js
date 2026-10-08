@@ -58,6 +58,12 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
         this._powerLabel = new St.Label({text: 'Checking power…', x_expand: true, y_align: Clutter.ActorAlign.CENTER});
         footer.add_child(this._powerIcon);
         footer.add_child(this._powerLabel);
+        const preview = new St.Button({label: 'Test', style_class: 'asus-notification-test', can_focus: true, accessible_name: 'Preview power notification'});
+        preview.connect('clicked', () => {
+            this.menu.close();
+            this._notify('Notification preview', `${this._powerLabel.text}\n${this._active < 0 ? 'Profile unavailable' : PROFILES[this._active].label}`, this._powerIcon.icon_name);
+        });
+        footer.add_child(preview);
         body.add_child(footer);
         item.add_child(body);
         this.menu.addMenuItem(item);
@@ -91,6 +97,7 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 
     _render() {
         this._buttons.forEach((button, i) => {
+            button.accessible_name = i === this._active ? `${PROFILES[i].label}, active profile` : PROFILES[i].label;
             if (i === this._active)
                 button.add_style_class_name('asus-profile-active');
             else

@@ -16,3 +16,5 @@
 .asus-hint { color: #b4afa7; font-size: 11px; }
 .asus-footer { spacing: 8px; color: #ded8ce; font-size: 12px; padding-top: 2px; }
 .asus-power-icon { icon-size: 18px; color: #efb66a; }
+.asus-notification-test { color: #c8c4bd; font-size: 10px; padding: 3px 7px; border: 1px solid #55514a; border-radius: 4px; }
+.asus-notification-test:hover, .asus-notification-test:focus { color: #ffffff; border-color: #efb66a; }

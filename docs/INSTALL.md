@@ -6,13 +6,12 @@ Other ASUS models expose different controls; this is not a promise of universal 
 
 ## 1. Install the desktop controls
 
-Download the Ubuntu `.deb` from [Releases](https://github.com/hlstrk/asus-control-center-ubuntu/releases),
-or build it with the source instructions below. Downloaded release packages normally
-land in `~/Downloads`; adjust the path below to the file you downloaded. For a local
-build, the package is in `dist/`. From the repository directory:
+Download the [Ubuntu package](../packages/v1.0.1/asus-control-center_1.0.1_amd64.deb)
+and compare it with [SHA256SUMS](../packages/v1.0.1/SHA256SUMS). Save the package
+in Downloads, then install it:
 
 ```bash
-sudo apt install ./dist/asus-control-center_1.0.0_amd64.deb
+sudo apt install ~/Downloads/asus-control-center_1.0.1_amd64.deb
 systemctl is-active asusd
 asusctl info
 ```
@@ -23,7 +22,7 @@ NVIDIA driver, or nvidia-powerd configuration. The daemon starts automatically.
 ## 2. Add the top-panel selector
 
 ```bash
-./scripts/install-panel.sh
+asus-control-panel-install
 ```
 
 On **X11**, press **Alt+F2**, type **r**, then press Enter. On **Wayland**, sign
@@ -46,7 +45,10 @@ asusd policy may select a different profile when the adapter is connected or rem
 The panel checks power supplies every two seconds. Two consistent changed samples
 confirm a plug/unplug transition. GNOME presents a notification with the power source,
 battery percentage and current profile. Do Not Disturb and notification settings
-still apply. A startup notification is intentionally omitted.
+still apply. A startup notification is intentionally omitted. The **Test** button
+in the panel previews the notification without changing the power state.
+
+![Native GNOME power notification preview](images/power-notification-preview.png)
 
 ## Build from source
 
@@ -61,6 +63,8 @@ sudo apt install build-essential cmake pkg-config libudev-dev libusb-1.0-0-dev \
 Install Rust using the official instructions at https://rustup.rs, then:
 
 ```bash
+git clone https://github.com/hlstrk/asus-control-center-ubuntu.git
+cd asus-control-center-ubuntu
 rustup toolchain install 1.93.0 --profile minimal
 ./scripts/build.sh
 ```
@@ -83,6 +87,6 @@ restart the X11 shell or sign in again on Wayland. If profile switching fails, i
 `journalctl -u asusd` and confirm your account has permission to use the daemon.
 Read-only kernel status remains visible even when the daemon is stopped.
 
-Remove the panel with `./scripts/uninstall-panel.sh`. Remove the desktop package
+Remove the panel with `asus-control-panel-remove`. Remove the desktop package
 with `sudo apt remove asus-control-center` if desired. Keep a copy of `/etc/asusd`
 if you want to preserve your profiles before making further configuration changes.

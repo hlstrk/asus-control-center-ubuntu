@@ -5,3 +5,5 @@
 *.log
 /vendor/asusctl/target/
 __pycache__/
+!/packages/**/*.deb
+!/packages/**/*.zip
