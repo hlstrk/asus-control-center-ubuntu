@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-version=1.2.0
+version=1.4.0
 repo=hlstrk/asus-control-center-ubuntu
 package="asus-control-center_${version}_amd64.deb"
 local_package=""

@@ -1,9 +1,11 @@
+import { AppMode } from "../globals.slint";
 // Copyright © SixtyFPS GmbH <info@slint.dev>
 // SPDX-License-Identifier: MIT
 
 import { Palette, VerticalBox } from "std-widgets.slint";
 
 component SideBarItem inherits Rectangle {
+    in property <image> icon;
     in property <bool> selected;
     in property <bool> has-focus;
     in-out property <string> text <=> label.text;
@@ -27,25 +29,28 @@ component SideBarItem inherits Rectangle {
 
     state := Rectangle {
         opacity: 0;
-        background: #363d45;
-        animate opacity { duration: 150ms; }
+        background: #343d47;
+        animate opacity { duration: AppMode.animations-enabled ? 150ms : 0ms; }
         height: 100%;
     }
 
     l := HorizontalLayout {
         x: 4px;
         y: (parent.height - self.height) / 2;
-        padding-left: 8px;
+        padding-left: 17px;
         padding-right: 8px;
-        padding-top: 12px;
-        padding-bottom: 12px;
-        spacing: 0px;
+        padding-top: 11px;
+        padding-bottom: 11px;
+        spacing: 11px;
+        Image { source: root.icon; width: 18px; height: 18px; colorize: root.selected ? #efb66a : #b5bdc7; }
         label := Text {
             color: root.selected ? #efb66a : #ded8ce;
             vertical-alignment: center;
             font-size: 13px;
         }
     }
+
+    if root.selected: Rectangle { x: 4px; y: 8px; width: 3px; height: parent.height - 16px; border-radius: 1px; background: #efb66a; }
 
     touch := TouchArea {
         width: 100%;
@@ -58,6 +63,9 @@ export component SideBar inherits Rectangle {
     in property <[bool]> available: [];
     in property <bool> is_tuf: false;
     in-out property <int> current-item: 0;
+    callback navigated();
+    changed current-item => { root.navigated(); }
+    in property <[image]> icons: [@image-url("../icons/monitor.svg"), @image-url("../icons/keyboard.svg"), @image-url("../icons/grid.svg"), @image-url("../icons/bolt.svg"), @image-url("../icons/fan.svg"), @image-url("../icons/chip.svg"), @image-url("../icons/battery.svg"), @image-url("../icons/settings.svg"), @image-url("../icons/info.svg")];
     out property <int> current-focused: fs.has-focus ? fs.focused-tab : -1;
 
     // The currently focused tab
@@ -66,7 +74,7 @@ export component SideBar inherits Rectangle {
     accessible-role: tab;
     accessible-delegate-focus: root.current-focused >= 0 ? root.current-focused : root.current-item;
     Rectangle {
-        background: #191d22e8;
+        background: #171d23;
         fs := FocusScope {
             key-pressed(event) => {
                 if (event.text == "\n") {
@@ -122,6 +130,7 @@ export component SideBar inherits Rectangle {
             vertical-stretch: 0;
             for item[index] in root.model: SideBarItem {
                 visible: root.available[index];
+                icon: root.icons[index];
                 clicked => {
                     root.current-item = index;
                 }

@@ -23,3 +23,24 @@ References inspected:
   contrast and communicating status with more than color.
 - https://github.com/OpenGamingCollective/asusctl — existing hardware controls,
   supported profile names and desktop structure.
+
+## 1.4.0 monitoring and input
+
+The main audience is ASUS laptop users checking load, heat and performance mode.
+The graphite/amber system remains; a muted mint distinguishes GPU traces from
+CPU traces without relying on color alone. Numeric readings and fixed axes sit
+above compact histories; sensor names and power scopes stay explicit. Direct
+profile tiles expose the current mode without a dropdown. The panel uses quiet
+label/value rows, with measurements collected outside the shell process.
+
+Title-bar dragging is bounded to 52 physical layout pixels; body controls remain
+interactive. Windows center on the current monitor, accounting for monitor origin.
+Native move/resize/position APIs were checked against the
+[winit window reference](https://docs.rs/winit/0.30.13/winit/window/struct.Window.html).
+The new GIFs capture the actual application, not a proposed mockup.
+
+Charts use fixed numeric axes and a vertical hover cursor tied to the nearest
+real sample. Profile icons sit above the label and workload explanation. Sidebar
+icons share a 24px outline system drawn for the project; amber identifies selection.
+The lighting page starts with device-reported region names rather than an Aura
+brand label, then exposes only controls supported by the current effect.

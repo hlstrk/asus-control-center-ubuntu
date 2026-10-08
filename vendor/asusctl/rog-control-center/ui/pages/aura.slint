@@ -20,9 +20,21 @@ export component PageAura inherits Rectangle {
 
     ScrollView {
         VerticalLayout {
-            padding: 10px;
-            spacing: 10px;
+            padding: 20px;
+            spacing: 16px;
             alignment: LayoutAlignment.start;
+            Rectangle {
+                height: 72px; background: transparent;
+                HorizontalLayout {
+                    spacing: 14px; alignment: start;
+                    Image { source: @image-url("../icons/keyboard.svg"); width: 30px; height: 30px; colorize: #efb66a; }
+                    VerticalLayout {
+                        spacing: 6px; alignment: center;
+                        Text { text: AuraPageData.lighting-title; font-size: 25px; font-weight: 700; color: #f4f1e9; }
+                        Text { text: AuraPageData.lighting-detail; font-size: 11px; color: #aab2bb; }
+                    }
+                }
+            }
             HorizontalLayout {
                 spacing: 10px;
                 SystemDropdown {
@@ -37,7 +49,7 @@ export component PageAura inherits Rectangle {
 
                 SystemDropdown {
                     width: root.width * 1px / 2px;
-                    text: @tr("Aura mode");
+                    text: @tr("Lighting effect");
                     current_index <=> AuraPageData.current_available_mode;
                     current_value: AuraPageData.available_mode_names[self.current-index];
                     model <=> AuraPageData.available_mode_names;
@@ -55,14 +67,15 @@ export component PageAura inherits Rectangle {
             }
 
             RogItem {
-                min-height: 220px;
+                background: #1d242b; border-color: #ffffff18; border-radius: 8px;
+                min-height: 252px;
                 max-height: 400px;
                 HorizontalLayout {
-                    padding-top: 5px;
+                    padding: 16px;
                     spacing: 10px;
                     VerticalBox {
                         Text {
-                            text: @tr("Colour 1");
+                            text: AuraPageData.lighting-title + " color"; font-size: 15px; font-weight: 700; color: #f4f1e9;
                             vertical-alignment: TextVerticalAlignment.center;
                             horizontal-alignment: TextHorizontalAlignment.center;
                         }
@@ -87,9 +100,33 @@ export component PageAura inherits Rectangle {
                         }
                     }
                     VerticalBox {
-                        Text { text: @tr("Colour 2"); vertical-alignment: TextVerticalAlignment.center; horizontal-alignment: TextHorizontalAlignment.center; }
-                        HorizontalBox {
+                        Text { text: AuraPageData.colour2_enabled ? "Secondary effect color" : "Color preview"; font-size: 15px; font-weight: 700; color: #f4f1e9; vertical-alignment: center; horizontal-alignment: center; }
+                        Text { text: AuraPageData.colour2_enabled ? "Second color for the current effect" : "The current effect uses one color"; color: #aab2bb; font-size: 10px; horizontal-alignment: center; }
+                        preview := Rectangle {
+                            height: AuraPageData.colour2_enabled ? 0px : 150px;
+                            if !AuraPageData.colour2_enabled: Rectangle {
+                                width: parent.width - 20px; height: 110px; x: 10px; y: 20px;
+                                border-width: 1px; border-color: #ffffff20; border-radius: 8px; background: #14191e;
+                                if AuraPageData.lighting-title == "Keyboard lighting": Rectangle {
+                                    x: 12px; y: 14px; width: parent.width - 24px; height: 80px;
+                                    for row in 3: Rectangle {
+                                        y: row * 23px; height: 18px; width: parent.width;
+                                        for key in 10: Rectangle {
+                                            x: key * (parent.width / 10); width: parent.width / 10 - 5px; height: 18px; border-radius: 3px;
+                                            background: AuraPageData.color1; opacity: 0.75;
+                                        }
+                                    }
+                                }
+                                if AuraPageData.lighting-title != "Keyboard lighting": Rectangle {
+                                    x: 20px; y: 45px; height: 15px; width: parent.width - 40px; border-radius: 6px; background: AuraPageData.color1;
+                                }
+                            }
+                        }
+                        Rectangle {
+                            height: AuraPageData.colour2_enabled ? 190px : 0px;
                             c2 := ColourSlider {
+                                visible: AuraPageData.colour2_enabled;
+                                width: parent.width; height: parent.height;
                                 enabled: AuraPageData.colour2_enabled;
                                 final_colour <=> AuraPageData.color2;
                                 colourbox <=> AuraPageData.colorbox2;
@@ -113,20 +150,20 @@ export component PageAura inherits Rectangle {
 
             HorizontalLayout {
                 spacing: 10px;
-                min-height: 80px;
-                max-height: 90px;
-                RogItem {
+                min-height: AuraPageData.zone_selection_enabled || AuraPageData.direction_enabled || AuraPageData.speed_enabled ? 72px : 0px;
+                max-height: 80px;
+                if AuraPageData.zone_selection_enabled: RogItem {
                     VerticalBox {
-                        Text { text: @tr("Zone"); vertical-alignment: TextVerticalAlignment.center; horizontal-alignment: TextHorizontalAlignment.center; }
+                        Text { text: @tr("Lighting region"); vertical-alignment: TextVerticalAlignment.center; horizontal-alignment: TextHorizontalAlignment.center; }
                         ComboBox {
-                            enabled: false;
+                            enabled: AuraPageData.zone_selection_enabled;
                             current_index <=> AuraPageData.zone;
                             current_value: AuraPageData.zone_names[self.current-index];
                             model <=> AuraPageData.zone_names;
                             selected => {
                                 AuraPageData.apply_effect({
                                     mode: AuraPageData.led_mode_data.mode,
-                                    zone: self.current-index,
+                                    zone: AuraPageData.zone_indexes[self.current-index],
                                     colour1: AuraPageData.led_mode_data.colour1,
                                     colour2: AuraPageData.led_mode_data.colour2,
                                     speed: AuraPageData.led_mode_data.speed,
@@ -136,7 +173,7 @@ export component PageAura inherits Rectangle {
                         }
                     }
                 }
-                RogItem {
+                if AuraPageData.direction_enabled: RogItem {
                     VerticalBox {
                         Text { text: @tr("Direction"); vertical-alignment: TextVerticalAlignment.center; horizontal-alignment: TextHorizontalAlignment.center; }
                         ComboBox {
@@ -157,9 +194,9 @@ export component PageAura inherits Rectangle {
                         }
                     }
                 }
-                RogItem {
+                if AuraPageData.speed_enabled: RogItem {
                     VerticalBox {
-                        Text { text: @tr("Speed"); vertical-alignment: TextVerticalAlignment.center; horizontal-alignment: TextHorizontalAlignment.center; }
+                        Text { text: @tr("Effect speed"); vertical-alignment: TextVerticalAlignment.center; horizontal-alignment: TextHorizontalAlignment.center; }
                         ComboBox {
                             enabled: AuraPageData.speed_enabled;
                             current_index <=> AuraPageData.speed;
@@ -182,7 +219,7 @@ export component PageAura inherits Rectangle {
 
             HorizontalLayout {
                 Button {
-                    text: @tr("Power Settings");
+                    text: @tr("Lighting on boot, sleep & shutdown");
                     clicked => {
                         root.show_fade_cover = true;
                         root.show_aura_power = true;
@@ -297,7 +334,7 @@ export component PageAura inherits Rectangle {
                 alignment: LayoutAlignment.start;
 
                 Text {
-                    text: "TODO: In progress";
+                    text: "Lighting power behavior";
                 }
 
                 for state[idx] in AuraPageData.led_power.states: old_zone := AuraPowerGroupOld {

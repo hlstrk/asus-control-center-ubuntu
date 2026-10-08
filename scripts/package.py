@@ -6,7 +6,7 @@ from pathlib import Path
 repo = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
 parser.add_argument('--target', type=Path, default=repo/'vendor/asusctl/target/release')
-parser.add_argument('--version', default='1.2.0')
+parser.add_argument('--version', default='1.4.0')
 args = parser.parse_args()
 source = repo/'vendor/asusctl'
 dist = repo/'dist';dist.mkdir(exist_ok=True)

@@ -50,6 +50,10 @@ export struct LaptopAuraPower {
 // Modes with colour2: Breathe, Star only.
 // Speed: Breathe,Strobe,Rainbow,Star,Rain,Highlight,Laser,Ripple. Direction: Rainbow only.
 export global AuraPageData {
+    in-out property <string> lighting-title: "Lighting";
+    in-out property <string> lighting-detail: "Detecting supported lighting regions…";
+    in-out property <[int]> zone-indexes: [0];
+    in-out property <bool> zone-selection-enabled: false;
     in-out property <[string]> power_zone_names: [
         @tr("Aura power zone" => "Logo"),
         @tr("Aura power zone" => "Keyboard"),
@@ -93,11 +97,11 @@ export global AuraPageData {
     in-out property <int> current_available_mode: 0;
     in-out property <[int]> supported_basic_modes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12];
     in-out property <[string]> zone_names: [
-        @tr("Aura zone" => "None"),
-        @tr("Aura zone" => "Key1"),
-        @tr("Aura zone" => "Key2"),
-        @tr("Aura zone" => "Key3"),
-        @tr("Aura zone" => "Key4"),
+        @tr("Aura zone" => "All lighting"),
+        @tr("Aura zone" => "Keyboard zone 1"),
+        @tr("Aura zone" => "Keyboard zone 2"),
+        @tr("Aura zone" => "Keyboard zone 3"),
+        @tr("Aura zone" => "Keyboard zone 4"),
         @tr("Aura zone" => "Logo"),
         @tr("Aura zone" => "Lightbar Left"),
         @tr("Aura zone" => "Lightbar Right"),

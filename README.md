@@ -9,6 +9,8 @@ quick profile switching and AC power notifications.
 
 - **Three profile buttons:** Performance, Balanced and Battery Saver, with an animated selector.
 - **Power-source notifications:** native GNOME notifications when the charger connects or disconnects.
+- **Live telemetry:** CPU/GPU temperatures, GPU watts, APU/SoC watts and fan RPM in the panel.
+- **History charts:** CPU/GPU temperature and utilization, with 60 bounded samples, labelled axes and values on hover.
 - **Desktop controls:** fan curves, keyboard lighting, battery charge limits and available hardware settings.
 - **Ubuntu packaging:** build a `.deb` on Ubuntu with X11 support and pinned Rust dependencies.
 
@@ -21,7 +23,7 @@ AC/battery switching.
 Run one installer from your desktop account:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hlstrk/asus-control-center-ubuntu/v1.2.0/scripts/install.sh -o /tmp/asus-control-install.sh && sudo bash /tmp/asus-control-install.sh
+curl -fsSL https://raw.githubusercontent.com/hlstrk/asus-control-center-ubuntu/v1.4.0/scripts/install.sh -o /tmp/asus-control-install.sh && sudo bash /tmp/asus-control-install.sh
 ```
 
 It downloads and verifies the versioned Ubuntu package, installs it with apt and
@@ -30,7 +32,7 @@ Enter. On Wayland, sign out and back in when ready. It does not reboot the lapto
 
 The `.deb` remains useful: apt tracks installed files, upgrades and removal, while
 the script handles the per-user panel setup. You do not need to download it manually.
-[Packages](packages/v1.2.0) · [Illustrated guide](docs/INSTALL.md) · [Source build](docs/INSTALL.md#build-from-source)
+[Packages](packages/v1.4.0) · [Illustrated guide](docs/INSTALL.md) · [Source build](docs/INSTALL.md#build-from-source)
 
 ## Basic and Advanced
 
@@ -40,13 +42,54 @@ mode, ASUS power limits and detailed power policy. The mode tabs are in the titl
 
 The desktop has a subtly translucent surface and rounded custom chrome. Text stays
 opaque. You can drag the title bar, resize from the bottom-right corner and use the
-minimize/maximize/close buttons. The panel gear opens the desktop controls.
+minimize/maximize/close buttons. New windows open centered on the active monitor.
+The icon sidebar supports keyboard navigation and animated page changes; GNOME’s
+reduced-motion setting disables these transitions. The panel gear opens the desktop controls.
 
 ## GPU monitoring
 
 Version 1.2.0 fixes AMD APU identification when the internal connector is `eDP-2`
 or when a MUX routes the display differently. Sensor readings are collected from
 the detected device rather than a hard-coded DRM card number. [AMD/NVIDIA GPU guide](docs/GPU.md).
+
+## Lighting that matches your laptop
+
+The lighting page names firmware-reported regions: keyboard, front lightbar,
+rear lighting or lid LEDs. It displays only the available effects and region,
+speed and direction controls. Color controls have named hue, saturation and
+brightness sliders; secondary-color controls explain when the effect uses them.
+Boot/sleep/shutdown settings retain the device’s supported power behavior.
+
+![Detected keyboard lighting controls](docs/images/desktop-lighting.png)
+
+## In action
+
+**Sidebar navigation**
+
+![Icon sidebar and page transitions](docs/images/desktop-navigation.gif)
+
+**Basic / Advanced navigation**
+
+![Switching desktop modes](docs/images/basic-advanced.gif)
+
+**Direct performance profiles**
+
+![Switching real platform profiles](docs/images/desktop-profiles.gif)
+
+**Live hardware history**
+
+Move over a chart to see the recorded value and its age. Temperatures have °C
+scales; utilization has a percentage scale. No reading is interpolated or filled
+with zero when a sensor is missing.
+
+![CPU and GPU temperature and utilization histories](docs/images/hardware-monitor.gif)
+
+The desktop samples while its window is visible. The panel reads independently,
+so its readings continue after Quit App. Missing sensors display N/A; APU/SoC
+power is not labelled as wall power or isolated iGPU power. Sleeping NVIDIA GPUs
+are skipped rather than awakened for a reading.
+
+![Panel hardware measurements](docs/images/panel-monitor.png)
 
 ## Screenshots
 
@@ -62,12 +105,13 @@ the detected device rather than a hard-coded DRM card number. [AMD/NVIDIA GPU gu
 
 ![Fan curves with labels on hover](docs/images/desktop-fan-curves.png)
 
-![Native notification preview](docs/images/power-notification-preview.png)
+Power-source notifications appear automatically when AC state changes.
 
 ## Development
 
 ```bash
 gjs -m tests/profiles.js
+python3 tests/telemetry_test.py
 bash -n scripts/*.sh
 ```
 

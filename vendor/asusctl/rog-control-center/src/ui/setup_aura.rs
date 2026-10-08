@@ -126,6 +126,20 @@ pub fn setup_aura_page(
             .map_err(|e| error!("{e}"))
             .ok();
 
+        let basic_zones = aura.supported_basic_zones().await.unwrap_or_default();
+        let zone_raws: Vec<i32> = if basic_zones.is_empty() { vec![0] } else { basic_zones.iter().map(|z| (*z).into()).collect() };
+        let zone_handle = handle.clone();
+        zone_handle.upgrade_in_event_loop(move |h| {
+            let data = h.global::<AuraPageData>();
+            let names = data.get_zone_names();
+            let labels: Vec<SharedString> = zone_raws.iter().map(|z| names.row_data(*z as usize).unwrap_or_else(|| "Lighting zone".into())).collect();
+            let selected = zone_raws.iter().position(|z| *z == data.get_led_mode_data().zone).unwrap_or(0);
+            data.set_zone_indexes(zone_raws.as_slice().into());
+            data.set_zone_names(labels.as_slice().into());
+            data.set_zone_selection_enabled(zone_raws.len() > 1);
+            data.set_zone(selected as i32);
+        }).ok();
+
         if let Ok(mut pow3r) = aura.supported_power_zones().await {
             let dev = aura
                 .device_type()
@@ -133,6 +147,24 @@ pub fn setup_aura_page(
                 .unwrap_or(AuraDeviceType::LaptopKeyboard2021);
             handle
                 .upgrade_in_event_loop(move |handle| {
+                    let labels: Vec<&str> = pow3r.iter().filter_map(|zone| match zone {
+                        PowerZones::Keyboard => Some("Keyboard"),
+                        PowerZones::KeyboardAndLightbar => Some("Keyboard & front lightbar"),
+                        PowerZones::Lightbar => Some("Front lightbar"),
+                        PowerZones::RearGlow => Some("Rear lighting"),
+                        PowerZones::Logo => Some("Lid logo"),
+                        PowerZones::Lid => Some("Lid edge lighting"),
+                        PowerZones::Ally => Some("Ally lighting"),
+                        PowerZones::None => None,
+                    }).collect();
+                    let title = match labels.as_slice() {
+                        ["Keyboard"] => "Keyboard lighting",
+                        ["Rear lighting"] => "Rear lighting",
+                        ["Front lightbar"] => "Front lighting",
+                        _ => "Device lighting",
+                    };
+                    handle.global::<AuraPageData>().set_lighting_title(title.into());
+                    handle.global::<AuraPageData>().set_lighting_detail(if labels.is_empty() { "Firmware lighting controls".into() } else { format!("Detected regions: {}", labels.join(" · ")).into() });
                     let names: Vec<SharedString> = handle
                         .global::<AuraPageData>()
                         .get_power_zone_names()

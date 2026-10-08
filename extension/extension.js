@@ -13,8 +13,10 @@ import {PROFILES, profileIndex, reducePower} from './profiles.js';
 import {readText, powerState, batteryPercent} from './platform.js';
 
 const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button {
-    _init() {
+    _init(extensionPath) {
         super._init(0.5, 'ASUS Control Center');
+        this._extensionPath = extensionPath;
+        this._telemetryProcess = null;
         this._disposed = false;
         this._power = {stable: null, candidate: null, samples: 0};
         this._active = -1;
@@ -61,13 +63,16 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
         this._powerLabel = new St.Label({text: 'Checking power…', x_expand: true, y_align: Clutter.ActorAlign.CENTER});
         footer.add_child(this._powerIcon);
         footer.add_child(this._powerLabel);
-        const preview = new St.Button({label: 'Test', style_class: 'asus-notification-test', can_focus: true, accessible_name: 'Preview power notification'});
-        preview.connect('clicked', () => {
-            this.menu.close();
-            this._notify('Notification preview', `${this._powerLabel.text}\n${this._active < 0 ? 'Profile unavailable' : PROFILES[this._active].label}`, this._powerIcon.icon_name);
-        });
-        footer.add_child(preview);
         body.add_child(footer);
+        const meters = new St.BoxLayout({vertical: true, style_class: 'asus-meters'});
+        this._meters = {};
+        for (const [key, title] of [['cpuTemp', 'CPU temperature'], ['gpuTemp', 'GPU temperature'], ['gpuPower', 'GPU power'], ['apuPower', 'APU / SoC power'], ['cpuFan', 'CPU fan'], ['gpuFan', 'GPU fan']]) {
+            const row = new St.BoxLayout({style_class: 'asus-meter-row'});
+            row.add_child(new St.Label({text: title, x_expand: true, style_class: 'asus-meter-label'}));
+            const value = new St.Label({text: 'N/A', style_class: 'asus-meter-value'});
+            row.add_child(value); meters.add_child(row); this._meters[key] = value;
+        }
+        body.add_child(meters);
         item.add_child(body);
         this.menu.addMenuItem(item);
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -83,6 +88,7 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
     _poll() {
         if (this._disposed)
             return;
+        this._readTelemetry();
         const index = profileIndex(readText('/sys/firmware/acpi/platform_profile'));
         if (index !== this._active) {
             this._active = index;
@@ -96,6 +102,34 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
         this._powerIcon.icon_name = ac ? 'battery-full-charging-symbolic' : 'battery-good-symbolic';
         if (this._power.changed)
             this._notify(ac ? 'Power connected' : 'Running on battery', `${label}${percent === null ? '' : ` · ${percent}%`}\n${this._active < 0 ? 'Checking profile' : PROFILES[this._active].label}`, ac ? 'battery-full-charging-symbolic' : 'battery-good-symbolic');
+    }
+
+    _readTelemetry() {
+        if (this._telemetryProcess || this._disposed)
+            return;
+        try {
+            const proc = Gio.Subprocess.new(['python3', `${this._extensionPath}/telemetry.py`], Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
+            this._telemetryProcess = proc;
+            proc.communicate_utf8_async(null, this._cancellable, (process, result) => {
+                if (this._disposed)
+                    return;
+                this._telemetryProcess = null;
+                let data = {};
+                try {
+                    const [, output] = process.communicate_utf8_finish(result);
+                    if (process.get_successful()) data = JSON.parse(output);
+                } catch { /* Keep missing data explicit; never reuse stale readings. */ }
+                for (const [key, label] of Object.entries(this._meters)) {
+                    const value = data[key];
+                    const valid = typeof value === 'number' && Number.isFinite(value) && value >= 0;
+                    const unit = key.endsWith('Temp') ? '°C' : key.endsWith('Power') ? ' W' : ' RPM';
+                    label.text = valid ? `${key.endsWith('Power') ? value.toFixed(1) : Math.round(value)}${unit}` : 'N/A';
+                }
+            });
+        } catch {
+            this._telemetryProcess = null;
+            Object.values(this._meters).forEach(label => { label.text = 'N/A'; });
+        }
     }
 
     _render() {
@@ -155,7 +189,7 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
         try {
             Gio.Subprocess.new(['rog-control-center'], Gio.SubprocessFlags.NONE);
         } catch {
-            this._notify('ROG Control Center is not installed', 'See the repository installation guide.', 'dialog-warning-symbolic');
+            this._notify('ASUS Control Center is not installed', 'See the repository installation guide.', 'dialog-warning-symbolic');
         }
     }
 
@@ -173,6 +207,7 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
     destroy() {
         this._disposed = true;
         this._cancellable?.cancel();
+        this._telemetryProcess?.force_exit();
         if (this._timer) {
             GLib.source_remove(this._timer);
             this._timer = 0;
@@ -184,7 +219,7 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 
 export default class AsusControlExtension extends Extension {
     enable() {
-        this._indicator = new Indicator();
+        this._indicator = new Indicator(this.path);
         Main.panel.addToStatusArea(this.uuid, this._indicator);
     }
 

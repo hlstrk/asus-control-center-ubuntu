@@ -177,6 +177,10 @@ pub fn setup_system_page(
                 } else {
                     data.set_battery_health(-1);
                 }
+                data.set_cpu_temp_history(append_sample(data.get_cpu_temp_history(), cpu_temp));
+                data.set_gpu_temp_history(append_sample(data.get_gpu_temp_history(), gpu_temp));
+                data.set_cpu_usage_history(append_sample(data.get_cpu_usage_history(), cpu_usage));
+                data.set_gpu_usage_history(append_sample(data.get_gpu_usage_history(), gpu_usage));
                 data.set_cpu_temp_val(cpu_temp);
                 data.set_gpu_temp_val(gpu_temp);
                 data.set_igpu_temp_val(igpu_temp);
@@ -853,4 +857,12 @@ pub fn setup_system_page_callbacks(ui: &MainWindow, _states: Arc<Mutex<Config>>)
             })
             .ok();
     });
+}
+
+fn append_sample(old: ModelRc<f32>, value: f32) -> ModelRc<f32> {
+    let mut samples: Vec<f32> = old.iter().collect();
+    if samples.is_empty() { samples = vec![-1.0; 60]; }
+    samples.remove(0);
+    samples.push(value);
+    ModelRc::new(VecModel::from(samples))
 }

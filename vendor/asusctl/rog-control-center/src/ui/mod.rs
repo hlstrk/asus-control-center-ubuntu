@@ -140,6 +140,10 @@ pub fn setup_window(
         .map_err(|e| warn!("Couldn't set application ID: {e:?}"))
         .ok();
     let ui = MainWindow::new().expect("Couldn't create main window");
+    let animations = std::process::Command::new("gsettings")
+        .args(["get", "org.gnome.desktop.interface", "enable-animations"])
+        .output().ok().map(|o| String::from_utf8_lossy(&o.stdout).trim() != "false").unwrap_or(true);
+    ui.global::<crate::AppMode>().set_animations_enabled(animations);
     let weak = ui.as_weak();
     ui.on_drag_window(move || {
         if let Some(ui) = weak.upgrade() { ui.window().with_winit_window(|w| { if let Err(error) = w.drag_window() { warn!("Native window move failed: {error}"); } }); }
@@ -185,12 +189,15 @@ pub fn setup_window(
         .into(),
     );
 
+    let quit_state = app_state.clone();
     ui.on_exit_app(move || {
+        if let Ok(mut state) = quit_state.lock() { *state = AppState::QuitApp; }
         if let Err(e) = slint::quit_event_loop() {
             log::warn!("Failed to quit event loop: {e:?}");
         }
     });
 
+    crate::window::center_window(&ui);
     setup_app_settings_page(&ui, config.clone(), shortcuts);
     if available.contains(&"xyz.ljones.Platform".to_string()) {
         setup_system_page(&ui, config.clone(), app_state.clone());

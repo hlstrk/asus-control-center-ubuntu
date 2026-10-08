@@ -147,6 +147,7 @@ impl WindowController {
             window.set_minimized(false);
             window.focus_window();
         });
+        center_window(ui);
         match ui.window().show() {
             Ok(()) => set_app_state(&self.0.app_state, AppState::MainWindowOpen),
             Err(err) => error!("Failed to show window: {err}"),
@@ -175,4 +176,19 @@ fn set_app_state(app_state: &Mutex<AppState>, state: AppState) {
         Ok(mut current) => *current = state,
         Err(err) => error!("Failed to update application state: {err}"),
     }
+}
+
+/// Center on the active monitor, including monitors with a nonzero origin.
+pub(crate) fn center_window(ui: &MainWindow) {
+    ui.window().with_winit_window(|window| {
+        if window.is_maximized() || window.fullscreen().is_some() { return; }
+        if let Some(monitor) = window.current_monitor().or_else(|| window.primary_monitor()) {
+            let origin = monitor.position();
+            let screen = monitor.size();
+            let size = window.outer_size();
+            let x = origin.x + (screen.width.saturating_sub(size.width) / 2) as i32;
+            let y = origin.y + (screen.height.saturating_sub(size.height) / 2) as i32;
+            window.set_outer_position(slint::winit_030::winit::dpi::PhysicalPosition::new(x, y));
+        }
+    });
 }

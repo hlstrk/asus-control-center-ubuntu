@@ -1,7 +1,8 @@
 import { Palette, Slider, HorizontalBox, Button, LineEdit } from "std-widgets.slint";
 
 export component ColourSlider inherits VerticalLayout {
-    spacing: 12px;
+    spacing: 8px;
+    property <bool> syncing: false;
     in-out property <bool> enabled;
     property <string> hex: "#FF0000";
     in-out property <float> c1value <=> c1.value;
@@ -82,14 +83,17 @@ export component ColourSlider inherits VerticalLayout {
     ];
 
     function set_base_colour() {
-        root.base_colour = hsv(c1.value / base_colours.length * 360, 1, 1);
-        root.final_colour = hsv(base_colour.to-hsv().hue, ((base_saturation.length - c2.value) / base_saturation.length), ((base_value.length - c3.value) / base_value.length));
-        root.colourbox = root.final_colour;
+        if (!root.syncing) {
+            root.base_colour = hsv(c1.value / base_colours.length * 360, 1, 1);
+            root.final_colour = hsv(base_colour.to-hsv().hue, ((base_saturation.length - c2.value) / base_saturation.length), ((base_value.length - c3.value) / base_value.length));
+            root.colourbox = root.final_colour;
+        }
     }
 
     callback external_colour_change();
 
     external_colour_change => {
+        root.syncing = true;
         if (root.final_colour.to-hsv().hue < 0) {
             c1.value = root.base_colours.length * (root.final_colour.to-hsv().hue + 360) / 360;
         } else {
@@ -98,11 +102,13 @@ export component ColourSlider inherits VerticalLayout {
         // c1.value = root.base_colours.length * 360 / root.final_colour.to-hsv().hue;
         c2.value = root.base_saturation.length - root.base_saturation.length * root.final_colour.to-hsv().saturation;
         c3.value = root.base_value.length - root.base_value.length * root.final_colour.to-hsv().value;
+        root.syncing = false;
         root.set_base_colour();
         hex = set_hex_from_colour(final_colour);
     }
+    Text { text: "Hue"; font-size: 10px; color: #aab2bb; }
     Rectangle {
-        height: 28px;
+        height: 22px;
         border-width: 1px;
         border-radius: 3px;
         border-color: Palette.border;
@@ -118,7 +124,7 @@ export component ColourSlider inherits VerticalLayout {
             // One less than the array length
             changed => {
                 set_base_colour();
-                hex = set_hex_from_colour(final_colour);
+                if (!root.syncing) { hex = set_hex_from_colour(final_colour); }
             }
             released => {
                 root.released();
@@ -126,8 +132,9 @@ export component ColourSlider inherits VerticalLayout {
         }
     }
 
+    Text { text: "Saturation"; font-size: 10px; color: #aab2bb; }
     Rectangle {
-        height: 28px;
+        height: 22px;
         border-width: 1px;
         border-radius: 3px;
         border-color: Palette.border;
@@ -142,7 +149,7 @@ export component ColourSlider inherits VerticalLayout {
             maximum: root.base_saturation.length;
             changed => {
                 set_base_colour();
-                hex = set_hex_from_colour(final_colour);
+                if (!root.syncing) { hex = set_hex_from_colour(final_colour); }
             }
             released => {
                 root.released();
@@ -150,8 +157,9 @@ export component ColourSlider inherits VerticalLayout {
         }
     }
 
+    Text { text: "Brightness"; font-size: 10px; color: #aab2bb; }
     Rectangle {
-        height: 28px;
+        height: 22px;
         border-width: 1px;
         border-radius: 3px;
         border-color: Palette.border;
@@ -166,7 +174,7 @@ export component ColourSlider inherits VerticalLayout {
             maximum: root.base_value.length;
             changed => {
                 set_base_colour();
-                hex = set_hex_from_colour(final_colour);
+                if (!root.syncing) { hex = set_hex_from_colour(final_colour); }
             }
             released => {
                 root.released();

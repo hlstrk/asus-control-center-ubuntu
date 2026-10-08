@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.4.0
+
+- Limit drag hit testing to the title bar; navigation and Quit App respond normally.
+- Center windows and add live CPU/GPU temperature/utilization charts.
+- Replace the profile dropdown with direct selectable tiles.
+- Add asynchronous panel sensor measurements; remove the Test button.
+- Document the measured power scopes and add real desktop interaction GIFs.
+- Add °C/% axes and hover sample values with timestamps.
+- Add icon profile toggles, sidebar icons and reduced-motion-aware page transitions.
+- Name detected lighting regions and hide unsupported controls.
+- Label color sliders and preserve HSV values during saved-color synchronization.
+
 ## 1.2.0
 
 - Add one sudo installer for the package and per-user panel.

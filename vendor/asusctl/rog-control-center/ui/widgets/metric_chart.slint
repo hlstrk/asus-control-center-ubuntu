@@ -1,0 +1,87 @@
+import { AppMode } from "../globals.slint";
+import { Palette } from "std-widgets.slint";
+
+// Fixed axes preserve the meaning of changes; missing samples break the line.
+export component MetricChart inherits Rectangle {
+    in property <string> label;
+    in property <string> unit;
+    in property <float> value: -1;
+    in property <[float]> samples: [];
+    in property <float> maximum: 100;
+    in property <color> accent: #efb66a;
+    height: 140px;
+    background: #14191e;
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: #ffffff12;
+    Text { x: 12px; y: 9px; text: root.label; color: #c6cbd1; font-size: 11px; }
+    Text { x: parent.width - self.width - 12px; y: 6px; text: root.value < 0 ? "N/A" : Math.round(root.value) + root.unit; color: #f4f1e9; font-size: 20px; font-weight: 700; }
+    in property <[float]> ticks: root.maximum == 100 ? [0, 25, 50, 75, 100] : [0, 45, 60, 90, 110];
+    property <int> hover-index: Math.clamp(Math.round(hover.mouse-x / plot.width * 59), 0, root.samples.length - 1);
+    property <float> hover-value: root.samples.length > 0 ? root.samples[root.hover-index] : -1;
+    for tick in root.ticks: Text {
+        x: 5px; y: plot.y + plot.height * (1 - tick / root.maximum) - self.height / 2;
+        width: 30px; horizontal-alignment: right;
+        text: Math.round(tick) + root.unit; font-size: 9px; color: #a9b2bd;
+    }
+    plot := Rectangle {
+        x: 43px; y: 38px; width: root.width - 55px; height: 78px;
+        clip: true;
+        for tick in root.ticks: Rectangle { y: plot.height * (1 - tick / root.maximum); height: 1px; width: plot.width; background: #ffffff10; }
+        for sample[index] in root.samples: Path {
+            visible: index > 0 && sample >= 0 && root.samples[Math.max(index - 1, 0)] >= 0;
+            width: plot.width; height: plot.height;
+            viewbox-width: plot.width / 1px;
+            viewbox-height: plot.height / 1px;
+            stroke: root.accent; stroke-width: 2px;
+            MoveTo { x: (index - 1) * ((plot.width / 1px) / 59); y: (plot.height / 1px) * (1 - Math.clamp(root.samples[Math.max(index - 1, 0)] / root.maximum, 0, 1)); }
+            LineTo { x: index * ((plot.width / 1px) / 59); y: (plot.height / 1px) * (1 - Math.clamp(sample / root.maximum, 0, 1)); }
+        }
+        if hover.has-hover && root.samples.length > 0: Rectangle {
+            x: root.hover-index * plot.width / 59; width: 1px; height: plot.height; background: #ffffff60;
+        }
+        if hover.has-hover && root.hover-value >= 0: Rectangle {
+            x: root.hover-index * plot.width / 59 - 3px;
+            y: plot.height * (1 - Math.clamp(root.hover-value / root.maximum, 0, 1)) - 3px;
+            width: 6px; height: 6px; border-radius: 3px; background: root.accent;
+        }
+        hover := TouchArea { width: plot.width; height: plot.height; }
+    }
+    Text { x: plot.x; y: 122px; text: "−118s"; font-size: 9px; color: #8f98a3; }
+    Text { x: parent.width - self.width - 12px; y: 122px; text: "Now"; font-size: 9px; color: #8f98a3; }
+    if hover.has-hover: Rectangle {
+        x: Math.clamp(plot.x + root.hover-index * plot.width / 59 - 60px, plot.x, root.width - 132px);
+        y: 30px; width: 120px; height: 24px; border-radius: 4px;
+        background: #303943; border-width: 1px; border-color: root.accent;
+        Text { text: (root.hover-value < 0 ? "N/A" : Math.round(root.hover-value) + root.unit) + " · −" + (59 - root.hover-index) * 2 + "s"; color: #f4f1e9; font-size: 11px; horizontal-alignment: center; vertical-alignment: center; }
+    }
+
+}
+
+export component ProfileChoice inherits Rectangle {
+    in property <string> label;
+    in property <string> hint;
+    in property <bool> active;
+    callback chosen();
+    in property <image> icon;
+    height: 90px;
+    background: root.active ? #efb66a : touch.has-hover ? #343b43 : #242b32;
+    animate background { duration: AppMode.animations-enabled ? 160ms : 0ms; }
+    border-radius: 6px;
+    border-width: focus.has-focus ? 2px : 1px;
+    border-color: focus.has-focus ? #f4f1e9 : root.active ? #f5cc94 : #ffffff18;
+    accessible-role: button;
+    accessible-label: root.label;
+    accessible-checkable: true;
+    accessible-checked: root.active;
+    VerticalLayout {
+        padding: 10px; spacing: 5px;
+        Rectangle { height: 24px; Image { source: root.icon; colorize: root.active ? #171a20 : #efb66a; x: (parent.width - self.width) / 2; width: 22px; height: 22px; } }
+        Text { text: root.label; font-size: 12px; font-weight: 700; horizontal-alignment: center; color: root.active ? #171a20 : #f4f1e9; }
+        Text { text: root.hint; font-size: 10px; horizontal-alignment: center; color: root.active ? #353129 : #aab2bb; }
+    }
+    focus := FocusScope {
+        key-pressed(event) => { if (event.text == " " || event.text == "\n") { root.chosen(); return accept; } return reject; }
+    }
+    touch := TouchArea { clicked => { focus.focus(); root.chosen(); } }
+}

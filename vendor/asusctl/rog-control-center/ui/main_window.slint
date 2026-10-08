@@ -18,7 +18,7 @@ import { AuraPageData, AuraDevType, LaptopAuraPower, AuraPowerState, PowerZones,
 export { AuraPageData, AuraDevType, LaptopAuraPower, AuraPowerState, PowerZones, AuraEffect }
 import { PageAppSettings, AppSettingsPageData, GlobalShortcutStatus } from "pages/app_settings.slint";
 
-export { AppSize, AttrMinMax, SystemPageData, AnimePageData, SlashPageData, AppSettingsPageData, GlobalShortcutStatus, GPUPageData }
+export { AppMode, AppSize, AttrMinMax, SystemPageData, AnimePageData, SlashPageData, AppSettingsPageData, GlobalShortcutStatus, GPUPageData }
 
 component ModeChoice inherits Rectangle {
     in property <bool> active;
@@ -106,7 +106,7 @@ export component MainWindow inherits Window {
       border-radius: 18px;
       border-width: 1px;
       border-color: #ffffff22;
-      background: #1b1f25ed;
+      background: #1b1f25f5;
       clip: true;
 
       Rectangle {
@@ -115,7 +115,7 @@ export component MainWindow inherits Window {
         height: 52px;
         background: transparent;
         TouchArea {
-            width: 100%; height: 100%;
+            width: frame.width - 360px; height: 52px;
             pointer-event(event) => {
                 if (event.kind == PointerEventKind.down && event.button == PointerEventButton.left) { root.drag-window(); }
             }
@@ -149,7 +149,7 @@ export component MainWindow inherits Window {
             side-bar := SideBar {
                 model: [
                     @tr("Menu1" => "System Control"),
-                    @tr("Menu2" => "Keyboard Aura"),
+                    AuraPageData.lighting-title,
                     @tr("Menu3" => "AniMe Matrix"),
                     @tr("Menu4" => "Slash Lighting"),
                     @tr("Menu5" => "Fan Curves"),
@@ -167,6 +167,7 @@ export component MainWindow inherits Window {
                     root.sidebar_items_avilable[6], root.sidebar_items_avilable[7], root.sidebar_items_avilable[8],
                 ];
                 is_tuf: root.is_tuf;
+                navigated => { page-content.entering = true; page-transition.running = true; }
             }
 
             Button {
@@ -179,7 +180,10 @@ export component MainWindow inherits Window {
             }
         }
 
-        Rectangle {
+        page-content := Rectangle {
+            property <bool> entering: false;
+            opacity: AppMode.animations-enabled && self.entering ? 0.15 : 1;
+            animate opacity { duration: self.entering ? 0ms : 180ms; }
             background: transparent;
             if(side-bar.current-item == 0): page := PageSystem {
                 width: frame.width - side-bar.width;
@@ -263,6 +267,8 @@ export component MainWindow inherits Window {
             }
         }
     }
+
+    page-transition := Timer { interval: 30ms; running: false; triggered => { page-content.entering = false; self.running = false; } }
 
     if fade_cover: Rectangle {
         x: 0px;

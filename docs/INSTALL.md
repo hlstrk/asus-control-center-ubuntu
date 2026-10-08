@@ -9,7 +9,7 @@ Other ASUS models expose different controls; this is not a promise of universal 
 From your normal desktop account, run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hlstrk/asus-control-center-ubuntu/v1.2.0/scripts/install.sh -o /tmp/asus-control-install.sh && sudo bash /tmp/asus-control-install.sh
+curl -fsSL https://raw.githubusercontent.com/hlstrk/asus-control-center-ubuntu/v1.4.0/scripts/install.sh -o /tmp/asus-control-install.sh && sudo bash /tmp/asus-control-install.sh
 ```
 
 The script validates Ubuntu package checksums, installs the `.deb` using apt,
@@ -20,7 +20,7 @@ installed files and removal; the script removes its download scratch directory.
 For an offline install, download the matching `.deb` and run:
 
 ```bash
-sudo bash scripts/install.sh --package ~/Downloads/asus-control-center_1.2.0_amd64.deb
+sudo bash scripts/install.sh --package ~/Downloads/asus-control-center_1.4.0_amd64.deb
 ```
 
 A root SSH session can explicitly set `INSTALL_USER` to the target desktop user.
@@ -46,10 +46,9 @@ asusd policy may select a different profile when the adapter is connected or rem
 The panel checks power supplies every two seconds. Two consistent changed samples
 confirm a plug/unplug transition. GNOME presents a notification with the power source,
 battery percentage and current profile. Do Not Disturb and notification settings
-still apply. A startup notification is intentionally omitted. The **Test** button
-in the panel previews the notification without changing the power state.
+still apply. A startup notification is intentionally omitted. The panel also shows live temperatures, GPU/APU power and fan RPM; there is no test button.
 
-![Native GNOME power notification preview](images/power-notification-preview.png)
+![Panel hardware monitor](images/panel-monitor.png)
 
 ## Desktop layout
 

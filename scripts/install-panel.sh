@@ -14,7 +14,7 @@ fi
 test -f "$source_dir/metadata.json" || { echo 'Panel template not found.' >&2; exit 1; }
 extension_dir="${XDG_DATA_HOME:-$HOME/.local/share}/gnome-shell/extensions/asus-control-center@hlstrk"
 mkdir -p "$extension_dir"
-install -m 644 "$source_dir"/{extension.js,profiles.js,platform.js,metadata.json,stylesheet.css} "$extension_dir/"
+install -m 644 "$source_dir"/{extension.js,profiles.js,platform.js,metadata.json,stylesheet.css,telemetry.py} "$extension_dir/"
 python3 - <<'PY'
 from gi.repository import Gio
 settings = Gio.Settings.new('org.gnome.shell')
