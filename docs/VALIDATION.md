@@ -10,7 +10,8 @@ Ubuntu 24.04, GNOME 46, X11, kernel 7.0.0-31-generic.
 - Real AMD iGPU temperature/utilization and NVIDIA measurements checked against Linux sensor files.
 - Panel profile/AC state tests retained, including debounce and unknown states.
 - Basic/Advanced views and About inspected in the actual application.
-- Installer refuses non-root execution; package/user setup tested with the target desktop account.
+- Installer refuses non-root execution; script syntax and package contents checked.
+- Per-user panel setup was verified in 1.0.1; the complete 1.2.0 sudo installer awaits local authentication.
 - Native window drag, resize, minimize, maximize, hide and reopen checks.
 - Updated package checksums and ClamAV scan.
 
