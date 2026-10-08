@@ -6,7 +6,7 @@ from pathlib import Path
 repo = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
 parser.add_argument('--target', type=Path, default=repo/'vendor/asusctl/target/release')
-parser.add_argument('--version', default='1.4.0')
+parser.add_argument('--version', default='1.5.0')
 args = parser.parse_args()
 source = repo/'vendor/asusctl'
 dist = repo/'dist';dist.mkdir(exist_ok=True)
@@ -36,7 +36,7 @@ with tempfile.TemporaryDirectory(prefix='asus-deb-') as tmp:
         install(file,'usr/share/locale/'+file.parents[1].name+'/LC_MESSAGES/'+file.name)
     # Ship the extension as a template. Enabling it is a per-user action.
     shutil.copytree(repo/'extension',stage/'usr/share/asus-control-center/extension')
-    for src, name in [('install-panel.sh', 'asus-control-panel-install'), ('uninstall-panel.sh', 'asus-control-panel-remove'), ('install.sh', 'asus-control-install')]:
+    for src, name in [('install-panel.sh', 'asus-control-panel-install'), ('uninstall-panel.sh', 'asus-control-panel-remove'), ('install.sh', 'asus-control-install'), ('shortcut.py', 'asus-control-shortcut'), ('../extension/lighting.py', 'asus-control-lighting')]:
         dest = stage/'usr/bin'/name
         shutil.copy2(repo/'scripts'/src, dest)
         dest.chmod(0o755)

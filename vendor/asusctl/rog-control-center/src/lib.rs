@@ -12,6 +12,7 @@ pub mod error;
 pub mod notify;
 pub mod shortcuts;
 pub mod tray;
+pub mod telemetry;
 pub mod types;
 pub mod ui;
 pub mod window;
@@ -22,6 +23,7 @@ pub const APP_ID: &str = "org.opengamingcollective.rog-control-center";
 pub const APP_ICON_PATH: &str = "/usr/share/icons/hicolor/512x512/apps/rog-control-center.png";
 
 pub fn print_versions() {
+    println!("Ubuntu edition v{}", telemetry::APP_VERSION);
     println!("App and daemon versions:");
     println!("      rog-gui v{}", VERSION);
     println!("        asusd v{}", asusd::VERSION);

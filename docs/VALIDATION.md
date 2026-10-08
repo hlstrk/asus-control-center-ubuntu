@@ -1,4 +1,4 @@
-# Validation for 1.4.0
+# Validation for 1.5.0
 
 Test hardware: ASUS TUF A15 FA507NV, AMD Radeon 680M and NVIDIA RTX 4060,
 Ubuntu 24.04, GNOME 46, X11, kernel 7.0.0-31-generic.
@@ -39,3 +39,48 @@ region/direction controls. Single-color effects show a labelled color preview.
 Navigation/profile icons and reduced-motion-aware animations compile in the real
 Slint interface. Actual interface GIFs are included in the README. Other lighting
 region combinations have not been physically tested on other laptops.
+
+## 1.5.0 checks
+
+- Locked release build succeeds with the adaptive lighting, fan draft editor,
+  grouped preferences and GNOME shortcut fallback.
+- Three Rust consent/quotas/error-allowlist tests passed.
+- Private collector validation and live authentication/deduplication/rate-limit checks passed.
+- A real opt-out process traced with strace opened no IPv4/IPv6 connections;
+  explicit opt-in successfully registered and reported. The first-launch question
+  was inspected and captured from a separate fresh config.
+- Actual Static/Breathe/Rainbow switching exercised. Controls adapted by effect.
+- Actual fan-point draft drag and Discard exercised; saved firmware curves remained
+  unchanged, as did the running Performance profile.
+- Real lighting/fan interaction GIFs captured from the application surface.
+- Collector deployment replaces only the API container. Public API health returned
+  200; frontend, database and unrelated host services remained running.
+
+Limitations above still apply. Random installation credentials are not hardware
+attestation; telemetry tests do not establish resistance to every possible attack.
+
+- Linux received the physical Armoury Crate key as X11 keycode 210 (XF86Launch3).
+- Local D-Bus panel lighting helper changed brightness, Static color, Breathe,
+  Rainbow and next-effect, then restored the captured original state. Invalid
+  color strings and unsupported mode/brightness values were rejected.
+- Public repository history was fetched and all five prior commits were checked:
+  no collector domain mention was present. No .env or private preference files
+  or common credential patterns are staged. Server implementation remains private.
+
+- Version 1.5.0 installed successfully through the one-script installer.
+- Native GNOME Aura binding changed a real lighting mode from Rainbow to Pulse;
+  the original state was restored. The loaded panel returned no extension errors.
+- The first-launch screenshot was refreshed after removing the service brand.
+
+- Consumed toggle commands before dispatch to prevent a delayed UI hide from
+  being immediately undone by the next polling interval.
+- Final package and extension scanned clean with ClamAV; matching package was
+  reinstalled successfully after that correction.
+
+- Installed key sequence: closed → Open (0) → Closed (2) → Open (0).
+  SHA-256 of the installed GUI matches the final release build.
+
+- Installed runtime checks also passed: the ASUS key restores a minimized window,
+  Quit App exits, and the ASUS key starts a fresh process afterwards.
+- Guardian audio and transcription user services remained active during the GUI,
+  package and panel reload tests.

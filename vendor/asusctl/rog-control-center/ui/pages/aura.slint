@@ -1,3 +1,4 @@
+import { ProfileChoice } from "../widgets/metric_chart.slint";
 import { SystemDropdown, RogItem, SystemToggle, SystemToggleVert } from "../widgets/common.slint";
 import { Palette, Button, ComboBox, VerticalBox, GroupBox } from "std-widgets.slint";
 import { StyleMetrics, Slider, HorizontalBox, TextEdit, SpinBox, LineEdit, ScrollView } from "std-widgets.slint";
@@ -38,7 +39,7 @@ export component PageAura inherits Rectangle {
             HorizontalLayout {
                 spacing: 10px;
                 SystemDropdown {
-                    text: @tr("Brightness");
+                    text: @tr("LED brightness");
                     current_index <=> AuraPageData.brightness;
                     current_value: AuraPageData.brightness_names[self.current-index];
                     model <=> AuraPageData.brightness_names;
@@ -47,29 +48,38 @@ export component PageAura inherits Rectangle {
                     }
                 }
 
-                SystemDropdown {
-                    width: root.width * 1px / 2px;
-                    text: @tr("Lighting effect");
-                    current_index <=> AuraPageData.current_available_mode;
-                    current_value: AuraPageData.available_mode_names[self.current-index];
-                    model <=> AuraPageData.available_mode_names;
-                    selected => {
+            }
+            Text { text: "LIGHTING EFFECT"; font-size: 11px; font-weight: 700; color: #efb66a; }
+            HorizontalLayout {
+                spacing: 8px;
+                for effect[index] in AuraPageData.available_mode_names: ProfileChoice {
+                    label: effect;
+                    hint: effect == "Static" ? "Solid color" : effect == "Rainbow" ? "Color spectrum" : effect == "Breathe" ? "Slow pulse" : effect == "Strobe" ? "Flashing" : "Lighting pattern";
+                    icon: effect == "Rainbow" ? @image-url("../icons/palette.svg") : effect == "Static" ? @image-url("../icons/keyboard.svg") : effect == "Breathe" ? @image-url("../icons/fan.svg") : @image-url("../icons/bolt.svg");
+                    active: index == AuraPageData.current_available_mode;
+                    chosen => {
+                        AuraPageData.current_available_mode = index;
                         AuraPageData.apply_effect({
-                            mode: AuraPageData.supported_basic_modes[self.current-index],
-                            zone: AuraPageData.led_mode_data.zone,
-                            colour1: AuraPageData.led_mode_data.colour1,
-                            colour2: AuraPageData.led_mode_data.colour2,
-                            speed: AuraPageData.led_mode_data.speed,
-                            direction: AuraPageData.led_mode_data.direction,
+                            mode: AuraPageData.supported_basic_modes[index], zone: AuraPageData.led_mode_data.zone,
+                            colour1: AuraPageData.led_mode_data.colour1, colour2: AuraPageData.led_mode_data.colour2,
+                            speed: AuraPageData.led_mode_data.speed, direction: AuraPageData.led_mode_data.direction,
                         });
                     }
+                }
+            }
+            if !AuraPageData.colour1_enabled && !AuraPageData.colour2_enabled: Rectangle {
+                height: 65px; background: #1d242b; border-width: 1px; border-color: #ffffff18; border-radius: 8px;
+                VerticalLayout { padding: 14px; spacing: 5px;
+                    Text { text: AuraPageData.available_mode_names[AuraPageData.current_available_mode] + " effect"; font-size: 15px; font-weight: 700; color: #f4f1e9; }
+                    Text { text: "Adjust the supported effect controls below."; font-size: 11px; color: #aab2bb; }
                 }
             }
 
             RogItem {
                 background: #1d242b; border-color: #ffffff18; border-radius: 8px;
-                min-height: 252px;
-                max-height: 400px;
+                visible: AuraPageData.colour1_enabled || AuraPageData.colour2_enabled;
+                min-height: self.visible ? (AuraPageData.colour2_enabled ? 290px : 252px) : 0px;
+                max-height: self.visible ? 400px : 0px;
                 HorizontalLayout {
                     padding: 16px;
                     spacing: 10px;

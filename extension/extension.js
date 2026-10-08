@@ -17,6 +17,9 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
         super._init(0.5, 'ASUS Control Center');
         this._extensionPath = extensionPath;
         this._telemetryProcess = null;
+        this._lightingProcess = null;
+        this._lightingState = null;
+        this._lightingBusy = false;
         this._disposed = false;
         this._power = {stable: null, candidate: null, samples: 0};
         this._active = -1;
@@ -73,11 +76,32 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
             row.add_child(value); meters.add_child(row); this._meters[key] = value;
         }
         body.add_child(meters);
+        this._lightingBox = new St.BoxLayout({vertical: true, style_class: 'asus-lighting'});
+        this._lightingBox.add_child(new St.Label({text: 'KEYBOARD LIGHTING', style_class: 'asus-subtitle'}));
+        this._lightingHint = new St.Label({text: 'Checking keyboard…', style_class: 'asus-hint'});
+        this._lightingBox.add_child(this._lightingHint);
+        this._brightnessRow = new St.BoxLayout({style_class: 'asus-lighting-row'});
+        this._brightnessButtons = ['Off', 'Low', 'Medium', 'High'].map((label, level) => {
+            const b = new St.Button({label, can_focus: true, x_expand: true, style_class: 'asus-rgb-choice', accessible_name: `Keyboard brightness ${label}`});
+            b.connect('clicked', () => this._lightingAction('brightness', String(level)));
+            this._brightnessRow.add_child(b); return b;
+        });
+        this._lightingBox.add_child(this._brightnessRow);
+        this._modeRow = new St.BoxLayout({style_class: 'asus-lighting-row'});
+        this._lightingBox.add_child(this._modeRow);
+        this._colorRow = new St.BoxLayout({style_class: 'asus-lighting-row'});
+        for (const [label, hex] of [['Amber', 'FFB500'], ['White', 'FFFFFF'], ['Red', 'FF4040'], ['Green', '46F900'], ['Blue', '458BFF'], ['Purple', 'AC64FF']]) {
+            const b = new St.Button({can_focus: true, x_expand: true, style_class: 'asus-rgb-swatch', accessible_name: `Static keyboard color ${label}`});
+            b.set_child(new St.Widget({width: 20, height: 14, style: `background-color: #${hex}; border-radius: 4px;`}));
+            b.connect('clicked', () => this._lightingAction('color', hex)); this._colorRow.add_child(b);
+        }
+        this._lightingBox.add_child(this._colorRow);
+        body.add_child(this._lightingBox);
         item.add_child(body);
         this.menu.addMenuItem(item);
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this.menu.addAction('Open ASUS Control Center', () => this._openControlCenter());
-        this.menu.connect('open-state-changed', (_menu, open) => { if (open) this._poll(); });
+        this.menu.connect('open-state-changed', (_menu, open) => { if (open) { this._poll(); this._lightingAction('status'); } });
         this._poll();
         this._timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 2, () => {
             this._poll();
@@ -89,6 +113,7 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
         if (this._disposed)
             return;
         this._readTelemetry();
+        if (this.menu.isOpen) this._lightingAction('status');
         const index = profileIndex(readText('/sys/firmware/acpi/platform_profile'));
         if (index !== this._active) {
             this._active = index;
@@ -129,6 +154,47 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
         } catch {
             this._telemetryProcess = null;
             Object.values(this._meters).forEach(label => { label.text = 'N/A'; });
+        }
+    }
+
+    _lightingAction(action, value = null) {
+        if (this._disposed || this._lightingProcess) return;
+        this._lightingBusy = action !== 'status';
+        if (this._lightingBusy) this._lightingHint.text = 'Applying keyboard lighting…';
+        try {
+            const args = ['python3', `${this._extensionPath}/lighting.py`, action];
+            if (value !== null) args.push(value);
+            const proc = Gio.Subprocess.new(args, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
+            this._lightingProcess = proc;
+            proc.communicate_utf8_async(null, this._cancellable, (process, result) => {
+                if (this._disposed) return;
+                this._lightingProcess = null; this._lightingBusy = false;
+                try {
+                    const [, output] = process.communicate_utf8_finish(result);
+                    this._lightingState = JSON.parse(output);
+                } catch { this._lightingState = {available: false}; }
+                this._renderLighting();
+            });
+        } catch { this._lightingProcess = null; this._lightingBusy = false; this._lightingState = {available: false}; this._renderLighting(); }
+    }
+
+    _renderLighting() {
+        const data = this._lightingState;
+        const available = data?.available === true;
+        this._brightnessRow.visible = available;
+        this._modeRow.visible = available;
+        this._colorRow.visible = available && data.modes.some(m => m.id === 0);
+        this._lightingHint.text = available ? `${data.modes.find(m => m.id === data.mode)?.label ?? 'Effect'} · #${data.color} · presets use Static` : 'Keyboard lighting unavailable';
+        this._brightnessButtons.forEach((b, level) => {
+            b.reactive = available && data.levels.includes(level);
+            if (available && data.brightness === level) b.add_style_class_name('asus-rgb-active');
+            else b.remove_style_class_name('asus-rgb-active');
+        });
+        this._modeRow.destroy_all_children();
+        if (available) for (const mode of data.modes.filter(m => [0, 1, 3].includes(m.id))) {
+            const b = new St.Button({label: mode.label, can_focus: true, x_expand: true, style_class: 'asus-rgb-choice', accessible_name: `Keyboard effect ${mode.label}`});
+            if (data.mode === mode.id) b.add_style_class_name('asus-rgb-active');
+            b.connect('clicked', () => this._lightingAction('mode', String(mode.id))); this._modeRow.add_child(b);
         }
     }
 
@@ -208,6 +274,7 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
         this._disposed = true;
         this._cancellable?.cancel();
         this._telemetryProcess?.force_exit();
+        this._lightingProcess?.force_exit();
         if (this._timer) {
             GLib.source_remove(this._timer);
             this._timer = 0;

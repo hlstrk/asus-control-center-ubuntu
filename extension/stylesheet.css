@@ -22,3 +22,11 @@
 .asus-meter-row { spacing: 16px; }
 .asus-meter-label { font-size: 12px; color: #b8bdc5; }
 .asus-meter-value { font-size: 12px; font-weight: 700; color: #f4f1e9; }
+
+.asus-lighting { spacing: 8px; padding-top: 12px; border-top: 1px solid #ffffff22; }
+.asus-lighting-row { spacing: 6px; }
+.asus-rgb-choice { padding: 7px 10px; border-radius: 6px; background-color: #24292e; color: #e0e2e5; font-size: 11px; }
+.asus-rgb-choice:hover, .asus-rgb-choice:focus { box-shadow: inset 0 0 0 1px #efb66a; }
+.asus-rgb-active { background-color: #efb66a; color: #251a0d; }
+.asus-rgb-swatch { padding: 8px; border-radius: 6px; background-color: #24292e; }
+.asus-rgb-swatch:hover, .asus-rgb-swatch:focus { box-shadow: inset 0 0 0 2px #f4f1e9; }

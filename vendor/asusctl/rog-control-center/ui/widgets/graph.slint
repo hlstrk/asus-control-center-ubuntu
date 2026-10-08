@@ -3,11 +3,12 @@ import { Palette } from "std-widgets.slint";
 export struct Node { x: length, y: length}
 
 export component Graph inherits Rectangle {
+    background: #14191e; border-radius: 8px; border-width: 1px; border-color: #ffffff18;
     in-out property <[Node]> nodes;
     in property <Node> node_min: { x: 0px, y: 0px };
     in property <Node> node_max: { x: 100px, y: 255px };
     property <length> graph_padding: 40px;
-    property <length> axis_font_size: 14px;
+    property <length> axis_font_size: 11px;
     // Text {
     //     x: 0;
     //     text: "Fan PWM";
@@ -41,33 +42,33 @@ export component Graph inherits Rectangle {
         }
         //
 
-        for n in 11: Path {
+        for n in 6: Path {
             viewbox-width: self.width / 1px;
             viewbox-height: self.height / 1px;
             stroke: Palette.alternate-foreground.darker(200%);
             stroke-width: 1px;
             MoveTo {
-                x: scale_x_to_graph(n * 10px) / 1px;
+                x: scale_x_to_graph(n * 20px) / 1px;
                 y: 0;
                 // scale_y_to_graph(n*1px) / 1px;
             }
 
             LineTo {
-                x: scale_x_to_graph(n * 10px) / 1px;
+                x: scale_x_to_graph(n * 20px) / 1px;
                 y: graph.height / 1px;
                 //scale_y_to_graph(n*1px) / 1px;
             }
         }
 
-        for n in 11: Text {
+        for n in 6: Text {
             color: #efb66a;
             font-size <=> root.axis_font_size;
-            text: "\{n * 10}c";
-            x: scale_x_to_graph(n * 10px) - self.width / 3;
+            text: "\{n * 20}°C";
+            x: scale_x_to_graph(n * 20px) - self.width / 3;
             y: graph.height + 2px;
         }
 
-        for n in 11: Path {
+        for n in 6: Path {
             viewbox-width: self.width / 1px;
             viewbox-height: self.height / 1px;
             stroke: Palette.alternate-foreground.darker(200%);
@@ -75,29 +76,29 @@ export component Graph inherits Rectangle {
             MoveTo {
                 x: 0;
                 //scale_x_to_graph(n*10px) / 1px;
-                y: scale_y_to_graph(n * 25.5px) / 1px;
+                y: scale_y_to_graph(n * 51px) / 1px;
             }
 
             LineTo {
                 x: graph.width / 1px;
                 //scale_x_to_graph(n*10px) / 1px;
-                y: scale_y_to_graph(n * 25.5px) / 1px;
+                y: scale_y_to_graph(n * 51px) / 1px;
             }
         }
 
-        for n in 11: Text {
+        for n in 6: Text {
             color: #efb66a;
             font-size <=> root.axis_font_size;
-            text: "\{n * 10}%";
+            text: "\{n * 20}%";
             x: - self.width;
-            y: graph.height - scale_y_to_graph(n * 25.5px) - self.height / 2;
+            y: graph.height - scale_y_to_graph(n * 51px) - self.height / 2;
         }
 
         for l[idx] in nodes: path := Rectangle {
             if idx + 1 != nodes.length: Path {
                 viewbox-width: self.width / 1px;
                 viewbox-height: self.height / 1px;
-                stroke: Palette.control-foreground;
+                stroke: #efb66a;
                 stroke-width: 2px;
                 MoveTo {
                     x: scale_x_to_graph(nodes[idx].x) / 1px;
@@ -126,10 +127,10 @@ export component Graph inherits Rectangle {
             ]
             //
             point := Rectangle {
-                background: Palette.control-foreground;
+                background: #efb66a;
                 x: scale_x_to_graph(n.x) - self.width / 2;
                 y: graph.height - scale_y_to_graph(n.y) - self.height / 2;
-                width: 18px;
+                width: 12px;
                 height: self.width;
                 border-radius: self.width / 2;
                 property <length> pad: 1px;
@@ -189,7 +190,7 @@ export component Graph inherits Rectangle {
             }
 
             tip := Rectangle {
-                background: Palette.control-foreground;
+                background: #efb66a;
                 opacity: 0.0;
                 border-radius: 12px;
                 x: final_x_pos();
@@ -227,7 +228,7 @@ export component Graph inherits Rectangle {
                 label := Text {
                     color: Palette.accent-foreground;
                     font-size: 14px;
-                    text: "\{Math.floor(n.x / 1px)}c, \{fan_pct()}%";
+                    text: "\{Math.floor(n.x / 1px)}°C, \{fan_pct()}%";
                 }
             }
         }

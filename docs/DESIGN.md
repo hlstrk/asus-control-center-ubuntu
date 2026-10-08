@@ -44,3 +44,12 @@ real sample. Profile icons sit above the label and workload explanation. Sidebar
 icons share a 24px outline system drawn for the project; amber identifies selection.
 The lighting page starts with device-reported region names rather than an Aura
 brand label, then exposes only controls supported by the current effect.
+
+## 1.5.0 lighting and preferences
+
+Effect tiles reuse the profile selector’s visual vocabulary. LED level is distinct
+from HSV color value; unsupported effect controls collapse. Two-color effects have
+extra vertical space so the second hex field stays inside its card. Fan drafts
+stay separate from saved firmware curves and have an explicit Discard action.
+Preferences are grouped by task rather than presented as an unlabelled switch list.
+The panel adds compact brightness/effect choices and accessible static-color swatches.

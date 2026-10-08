@@ -238,6 +238,16 @@ pub fn setup_app_settings_page(
     shortcuts: Option<ShortcutHandle>,
 ) {
     let config_copy = config.clone();
+    let privacy = ui.global::<crate::TelemetryPageData>();
+    let choice = crate::telemetry::choice();
+    privacy.set_choice_known(choice.is_some()); privacy.set_enabled(choice == Some(true)); privacy.set_status(crate::telemetry::status().into());
+    let weak = ui.as_weak();
+    privacy.on_set_consent(move |enabled| {
+        crate::telemetry::set_consent(enabled);
+        if let Some(ui) = weak.upgrade() {
+            let data = ui.global::<crate::TelemetryPageData>(); data.set_choice_known(true); data.set_enabled(enabled); data.set_status(crate::telemetry::status().into());
+        }
+    });
     let global = ui.global::<AppSettingsPageData>();
     global.on_set_run_in_background(move |enable| {
         if let Ok(mut lock) = config_copy.try_lock() {
@@ -382,7 +392,7 @@ pub fn setup_app_settings_page(
                     // First use opens the Bind dialog; an existing but
                     // unassigned shortcut opens Configure (portal v2) via
                     // the actor's interactive enable flow.
-                    ShortcutStatus::Unassigned => {
+                    ShortcutStatus::Unassigned | ShortcutStatus::Unavailable => {
                         handle.enable(EnableMode::Interactive).await;
                     }
                     // Reconfigure an active shortcut in the desktop's own

@@ -90,7 +90,7 @@ impl WindowController {
             match command {
                 WindowCommand::Show => self.show(state),
                 WindowCommand::Toggle => {
-                    if state.ui.as_ref().is_some_and(|ui| ui.window().is_visible()) {
+                    if state.ui.as_ref().is_some_and(|ui| ui.window().is_visible() && ui.window().with_winit_window(|w| !w.is_minimized().unwrap_or(false)).unwrap_or(true)) {
                         self.hide(state);
                     } else {
                         self.show(state);

@@ -1,8 +1,8 @@
 {
   "uuid": "asus-control-center@hlstrk",
   "name": "ASUS Control Center",
-  "description": "Animated ASUS performance profiles and AC power notifications for Ubuntu.",
+  "description": "ASUS performance profiles, keyboard RGB, hardware readings and AC notifications for Ubuntu.",
   "shell-version": ["46"],
   "url": "https://github.com/hlstrk/asus-control-center-ubuntu",
-  "version": 1
+  "version": 5
 }

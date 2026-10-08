@@ -37,6 +37,7 @@ export global FanPageData {
 
     callback set_fan_data(FanType, Profile, bool, [Node]);
     callback set_profile_default(Profile);
+    callback reload_profile(Profile);
 
     in-out property <[Node]> balanced_cpu: [
         {

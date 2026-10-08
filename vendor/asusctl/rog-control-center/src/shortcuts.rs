@@ -315,6 +315,33 @@ async fn run(
     configurable: Arc<AtomicBool>,
     mut shutdown: watch::Receiver<bool>,
 ) {
+    // GNOME 46 lacks the GlobalShortcuts portal. Its persistent media-key binding
+    // also launches the app after Quit App, without an input-device grab.
+    if std::env::var("XDG_CURRENT_DESKTOP").unwrap_or_default().to_ascii_lowercase().contains("gnome") {
+        configurable.store(false, Ordering::Relaxed);
+        loop {
+            let command = tokio::select! {
+                _ = shutdown_requested(&mut shutdown) => break,
+                command = commands.recv() => command,
+            };
+            match command {
+                Some(Command::Enable { respond, .. }) => {
+                    let ok = gnome_binding("enable").await;
+                    if !ok { error!("GNOME ASUS key setup failed"); }
+                    let next = if ok { ShortcutStatus::Listening } else { ShortcutStatus::Unavailable };
+                    status.send_replace(next);
+                    let _ = respond.send(next);
+                }
+                Some(Command::Disable) => {
+                    gnome_binding("disable").await;
+                    status.send_replace(ShortcutStatus::Disabled);
+                }
+                Some(Command::Configure { respond }) => { let _ = respond.send(false); }
+                None => break,
+            }
+        }
+        return;
+    }
     // Reuse the portal proxy; recreate sessions per enable cycle.
     let mut portal: Option<Portal> = None;
     let actor = Actor {
@@ -740,4 +767,11 @@ mod tests {
         assert!(!ShortcutStatus::Unassigned.keeps_alive(true));
         assert!(!ShortcutStatus::Unavailable.keeps_alive(true));
     }
+}
+
+async fn gnome_binding(action: &'static str) -> bool {
+    tokio::task::spawn_blocking(move || {
+        std::process::Command::new("asus-control-shortcut").arg(action).output()
+            .map(|output| output.status.success()).unwrap_or(false)
+    }).await.unwrap_or(false)
 }

@@ -3,6 +3,9 @@ use argh::FromArgs;
 #[derive(Default, FromArgs)]
 /// ROG Control Center
 pub struct CliStart {
+    /// toggle the existing window, or start the app if it is not running
+    #[argh(switch)]
+    pub toggle: bool,
     /// start fullscreen, if used the option is saved
     #[argh(switch)]
     pub fullscreen: bool,

@@ -11,6 +11,8 @@ quick profile switching and AC power notifications.
 - **Power-source notifications:** native GNOME notifications when the charger connects or disconnects.
 - **Live telemetry:** CPU/GPU temperatures, GPU watts, APU/SoC watts and fan RPM in the panel.
 - **History charts:** CPU/GPU temperature and utilization, with 60 bounded samples, labelled axes and values on hover.
+- **Keyboard RGB in the panel:** brightness, Static/Breathe/Rainbow and six preset colors.
+- **Hardware shortcuts:** Armoury Crate opens/hides the app; Aura cycles supported lighting effects.
 - **Desktop controls:** fan curves, keyboard lighting, battery charge limits and available hardware settings.
 - **Ubuntu packaging:** build a `.deb` on Ubuntu with X11 support and pinned Rust dependencies.
 
@@ -23,7 +25,7 @@ AC/battery switching.
 Run one installer from your desktop account:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hlstrk/asus-control-center-ubuntu/v1.4.0/scripts/install.sh -o /tmp/asus-control-install.sh && sudo bash /tmp/asus-control-install.sh
+curl -fsSL https://raw.githubusercontent.com/hlstrk/asus-control-center-ubuntu/v1.5.0/scripts/install.sh -o /tmp/asus-control-install.sh && sudo bash /tmp/asus-control-install.sh
 ```
 
 It downloads and verifies the versioned Ubuntu package, installs it with apt and
@@ -32,7 +34,7 @@ Enter. On Wayland, sign out and back in when ready. It does not reboot the lapto
 
 The `.deb` remains useful: apt tracks installed files, upgrades and removal, while
 the script handles the per-user panel setup. You do not need to download it manually.
-[Packages](packages/v1.4.0) · [Illustrated guide](docs/INSTALL.md) · [Source build](docs/INSTALL.md#build-from-source)
+[Packages](packages/v1.5.0) · [Illustrated guide](docs/INSTALL.md) · [Source build](docs/INSTALL.md#build-from-source)
 
 ## Basic and Advanced
 
@@ -56,11 +58,48 @@ the detected device rather than a hard-coded DRM card number. [AMD/NVIDIA GPU gu
 
 The lighting page names firmware-reported regions: keyboard, front lightbar,
 rear lighting or lid LEDs. It displays only the available effects and region,
-speed and direction controls. Color controls have named hue, saturation and
-brightness sliders; secondary-color controls explain when the effect uses them.
+speed and direction controls. LED brightness is separate from the color’s HSV value. Icon effect tiles
+switch the controls below: one color for Static, two for Breathe, and only
+supported speed/direction controls for color-independent effects.
 Boot/sleep/shutdown settings retain the device’s supported power behavior.
 
 ![Detected keyboard lighting controls](docs/images/desktop-lighting.png)
+
+![Switching lighting effects](docs/images/lighting-effects.gif)
+
+## Cooling and settings
+
+Advanced → Fan Curves has separate profile and CPU/GPU selectors. Dragging a
+point edits a draft; **Apply curve** writes it, while **Discard edits** reloads
+the saved curve. Selecting a curve profile does not change the running profile.
+Unsupported fans are hidden.
+
+![Drafting and discarding a fan curve](docs/images/fan-curve-editor.gif)
+
+App Settings groups startup, window behavior, ASUS key, notifications and optional
+statistics. On GNOME 46 the ASUS/ROG key uses a native custom shortcut, so it can
+open the app after Quit App as well as hide or restore an existing window.
+Existing custom shortcuts are preserved; conflicting assignments are reported.
+The Aura key cycles available lighting effects. Color presets in the panel select
+Static; changes are written through the existing local ASUS daemon.
+
+![Panel keyboard RGB controls](docs/images/panel-keyboard-rgb.png)
+
+![Application preferences](docs/images/desktop-settings.png)
+
+## Optional statistics
+
+The first launch asks before sending anything. **Keep off** sends no reports;
+the choice can be changed in App Settings. With permission, the development statistics service receives up
+to three compatibility reports per day and up to five fixed error codes. Reports
+contain software version, desktop/session type and CPU/GPU vendor categories.
+They exclude names, serial numbers, hardware IDs, file paths, recordings and raw
+logs. A random installation ID makes reports pseudonymous rather than identifying
+your hardware. Normal HTTP infrastructure still handles your connection IP.
+
+![First-launch choice](docs/images/statistics-consent.png)
+
+[Exact fields, retention and API protections](docs/PRIVACY.md)
 
 ## In action
 

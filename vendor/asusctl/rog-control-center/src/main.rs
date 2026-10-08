@@ -25,11 +25,11 @@ use tokio::runtime::Runtime;
 
 fn main() -> Result<()> {
     // Ensure tracing spans are quiet by default unless user overrides
-    env_logger::Builder::from_env(
-        Env::default().default_filter_or("warn,tracing=error,zbus=error"),
-    )
-    .format_timestamp(None)
-    .init();
+    let logger = env_logger::Builder::from_env(Env::default().default_filter_or("warn,tracing=error,zbus=error"))
+        .format_timestamp(None).build();
+    let level = logger.filter();
+    log::set_boxed_logger(Box::new(rog_control_center::telemetry::DiagnosticLogger { inner: logger })).expect("Could not initialize logging");
+    log::set_max_level(level);
 
     let cli_parsed: CliStart = argh::from_env();
 
@@ -64,10 +64,12 @@ fn main() -> Result<()> {
         {
             info!("App is already running: {state:?}, opening the window");
             // if there is a proxy connection assume the app is already running
-            proxy.set_state(AppState::MainWindowShouldOpen)?;
+            proxy.set_state(if cli_parsed.toggle { AppState::MainWindowShouldToggle } else { AppState::MainWindowShouldOpen })?;
             std::process::exit(0);
         }
     }
+
+    rog_control_center::telemetry::initialize();
 
     // version checks
     let self_version = env!("CARGO_PKG_VERSION");
@@ -125,6 +127,7 @@ fn main() -> Result<()> {
 
     // Startup
     let mut config = Config::new().load();
+    if cli_parsed.toggle { config.startup_in_background = false; }
     if cli_parsed.fullscreen {
         config.start_fullscreen = true;
         if cli_parsed.width_fullscreen != 0 {
@@ -289,13 +292,20 @@ fn main() -> Result<()> {
             }
 
             // save as a var, don't hold the lock the entire time or deadlocks happen
-            if let Ok(app_state) = app_state.lock() {
+            if let Ok(mut app_state) = app_state.lock() {
                 state = *app_state;
+                // Consume a toggle before queuing it: the UI event loop may need
+                // more than one polling interval to hide/show the window.
+                if state == AppState::MainWindowShouldToggle {
+                    *app_state = AppState::MainWindowOpen;
+                }
             }
 
             // This sleep is required to give the event loop time to react
             sleep(Duration::from_millis(300));
-            if state == AppState::MainWindowShouldOpen {
+            if state == AppState::MainWindowShouldToggle {
+                window.request(WindowCommand::Toggle);
+            } else if state == AppState::MainWindowShouldOpen {
                 window.request(WindowCommand::Show);
             } else if state == AppState::QuitApp {
                 window.request(WindowCommand::Quit);

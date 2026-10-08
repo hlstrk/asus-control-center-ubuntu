@@ -168,6 +168,7 @@ pub fn setup_system_page(
             prev_ticks = curr_ticks;
 
             let success = handle.upgrade_in_event_loop(move |ui| {
+                ui.global::<crate::TelemetryPageData>().set_status(crate::telemetry::status().into());
                 let data = ui.global::<SystemPageData>();
                 if has_bat {
                     data.set_battery_health(health);

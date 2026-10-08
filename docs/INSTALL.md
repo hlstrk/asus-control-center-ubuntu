@@ -9,7 +9,7 @@ Other ASUS models expose different controls; this is not a promise of universal 
 From your normal desktop account, run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hlstrk/asus-control-center-ubuntu/v1.4.0/scripts/install.sh -o /tmp/asus-control-install.sh && sudo bash /tmp/asus-control-install.sh
+curl -fsSL https://raw.githubusercontent.com/hlstrk/asus-control-center-ubuntu/v1.5.0/scripts/install.sh -o /tmp/asus-control-install.sh && sudo bash /tmp/asus-control-install.sh
 ```
 
 The script validates Ubuntu package checksums, installs the `.deb` using apt,
@@ -20,7 +20,7 @@ installed files and removal; the script removes its download scratch directory.
 For an offline install, download the matching `.deb` and run:
 
 ```bash
-sudo bash scripts/install.sh --package ~/Downloads/asus-control-center_1.4.0_amd64.deb
+sudo bash scripts/install.sh --package ~/Downloads/asus-control-center_1.5.0_amd64.deb
 ```
 
 A root SSH session can explicitly set `INSTALL_USER` to the target desktop user.

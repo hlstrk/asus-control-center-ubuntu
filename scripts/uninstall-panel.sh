@@ -9,3 +9,7 @@ PY
 extension_dir="${XDG_DATA_HOME:-$HOME/.local/share}/gnome-shell/extensions/asus-control-center@hlstrk"
 rm -rf -- "$extension_dir"
 echo 'Panel removed. asusctl and your other extensions are unchanged.'
+
+if command -v asus-control-shortcut >/dev/null; then
+    asus-control-shortcut disable-aura || true
+fi

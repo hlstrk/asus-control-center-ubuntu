@@ -203,6 +203,22 @@ pub fn setup_fan_curve_page(ui: &MainWindow, _config: Arc<Mutex<Config>>) {
                     update_fan_data(handle_next, balanced, perf, quiet);
                 });
             });
+            let reload_proxy = fans.clone();
+            let reload_window = handle.as_weak();
+            let reload_choices = choices_for_ui.clone();
+            global.on_reload_profile(move |profile| {
+                let proxy = reload_proxy.clone(); let window = reload_window.clone(); let choices = reload_choices.clone();
+                tokio::spawn(async move {
+                    let target = PlatformProfile::from(profile).resolve_alias(&choices);
+                    if let Ok(data) = proxy.fan_curve_data(target).await {
+                        match profile {
+                            crate::Profile::Balanced => update_fan_data(window, data, vec![], vec![]),
+                            crate::Profile::Performance => update_fan_data(window, vec![], data, vec![]),
+                            _ => update_fan_data(window, vec![], vec![], data),
+                        }
+                    }
+                });
+            });
             global.on_set_fan_data(move |fan, profile, enabled, data| {
                 let fans = fans.clone();
                 let data: Vec<Node> = data.iter().collect();

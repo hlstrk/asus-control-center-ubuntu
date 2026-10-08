@@ -17,6 +17,7 @@ pub enum AppState {
     StartingUp = 3,
     QuitApp = 4,
     LockFailed = 5,
+    MainWindowShouldToggle = 6,
 }
 
 pub struct ROGCCZbus {

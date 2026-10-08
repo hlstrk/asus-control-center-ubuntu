@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-version=1.4.0
+version=1.5.0
 repo=hlstrk/asus-control-center-ubuntu
 package="asus-control-center_${version}_amd64.deb"
 local_package=""
@@ -46,7 +46,7 @@ else
 fi
 chmod 755 "$tmp_dir"
 chmod 644 "$tmp_dir/$package"
-apt-get install -y "$tmp_dir/$package"
+apt-get install -y --reinstall "$tmp_dir/$package"
 if [ -S "/run/user/$target_uid/bus" ]; then
     runuser -u "$target_user" -- env HOME="$target_home" XDG_RUNTIME_DIR="/run/user/$target_uid" \
         DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$target_uid/bus" /usr/bin/asus-control-panel-install

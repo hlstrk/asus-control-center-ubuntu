@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.5.0
+
+- Adaptive lighting effect tiles; separate LED brightness and HSV value labels.
+- Fan curve draft editor with profile/fan selectors and saved-curve reload.
+- Grouped, scrollable application preferences and native GNOME ASUS key fallback.
+- ASUS key can launch after Quit App and restore a minimized window.
+- First-run opt-in compatibility statistics, bounded reporting and fixed error codes.
+- Optional development statistics service with bounded reporting and retention.
+- GNOME panel keyboard brightness, effects and static color presets.
+- Native Aura key binding to cycle supported effects.
+- Updated real interaction GIFs and installation/privacy documentation.
+
 ## 1.4.0
 
 - Limit drag hit testing to the title bar; navigation and Quit App respond normally.
