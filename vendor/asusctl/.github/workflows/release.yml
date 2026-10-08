@@ -1,0 +1,91 @@
+name: Build Arch Packages
+
+on:
+    release:
+        types: [published]
+    workflow_dispatch:
+
+permissions:
+    contents: write
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        container:
+            image: archlinux/archlinux:base-devel
+        steps:
+            - name: Prepare container & install dependencies
+              run: |
+                  pacman-key --init && pacman-key --populate archlinux
+                  pacman -Syu --noconfirm git sudo rust llvm clang mold lld at-spi2-core cairo gtk3
+
+            - uses: actions/checkout@v7
+              with:
+                  fetch-depth: 0
+
+            - name: Create build user
+              run: |
+                  useradd -m builder
+                  echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+            - name: Determine pkgrel
+              env:
+                  BUCKET_PUBLIC_URL: ${{ vars.BUCKET_PUBLIC_URL }}
+                  RELEASE_TAG: ${{ github.event.release.tag_name }}
+              run: |
+                  git config --global --add safe.directory "$PWD"
+                  PKGREL=1
+                  if [ -n "$RELEASE_TAG" ] && [ -n "$BUCKET_PUBLIC_URL" ] && curl -sf "$BUCKET_PUBLIC_URL/ogc.db.tar.gz" -o /tmp/ogc.db.tar.gz; then
+                      pkgver=$(git describe --long --tags "$RELEASE_TAG" | sed 's/\([^-]*-g\)/r\1/;s/-/./g')
+                      LAST=0
+                      for pkgname in asusctl rog-control-center; do
+                          rel=$(bsdtar -xOzf /tmp/ogc.db.tar.gz 2>/dev/null \
+                              | strings \
+                              | grep -E "^${pkgname}-${pkgver}-[0-9]+-x86_64\.pkg\.tar\.zst$" \
+                              | sed -E "s/^${pkgname}-${pkgver}-([0-9]+)-.*/\1/" \
+                              | sort -n | tail -1)
+                          [ -n "$rel" ] && [ "$rel" -gt "$LAST" ] && LAST=$rel
+                      done
+                      [ "$LAST" -gt 0 ] && PKGREL=$((LAST + 1))
+                  fi
+                  echo "PKGREL=$PKGREL" >> "$GITHUB_ENV"
+
+            - name: Build packages
+              run: |
+                  git config --global --add safe.directory "$PWD"
+                  _gitref="${{ github.event.release.tag_name }}"
+                  [ -z "$_gitref" ] && _gitref=$(git rev-parse HEAD)
+                  cp distro-packaging/PKGBUILD .
+                  cp distro-packaging/asusctl.install .
+                  chown -R builder:builder .
+                  sudo -u builder \
+                      MAKEFLAGS="-j$(nproc)" \
+                      CARGO_BUILD_JOBS="$(nproc)" \
+                      CI_BUILD=1 \
+                      _gitref="$_gitref" \
+                      pkgrel="$PKGREL" \
+                      makepkg -s --noconfirm
+
+            - name: Upload release assets
+              if: github.event_name == 'release'
+              uses: softprops/action-gh-release@v3
+              with:
+                  files: |
+                      *.pkg.tar.zst
+                  fail_on_unmatched_files: true
+
+            - name: Rename non-release build assets
+              if: github.event_name != 'release'
+              run: |
+                  for f in *.pkg.tar.zst; do
+                      [ -f "$f" ] || continue
+                      mv "$f" "${f%.pkg.tar.zst}-run${{ github.run_number }}.${{ github.run_attempt }}.pkg.tar.zst"
+                  done
+
+            - name: Upload build artifacts
+              if: github.event_name != 'release'
+              uses: actions/upload-artifact@v7
+              with:
+                  name: arch-packages
+                  path: |
+                      *.pkg.tar.zst

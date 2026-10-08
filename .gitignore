@@ -1,0 +1,7 @@
+/dist/
+/target/
+*.deb
+*.zip
+*.log
+/vendor/asusctl/target/
+__pycache__/

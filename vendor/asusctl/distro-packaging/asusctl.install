@@ -1,0 +1,17 @@
+#!/hint/bash
+post_upgrade() {
+    cleanup_asusd_leftovers
+    systemctl restart asusd.service
+}
+
+post_install() {
+    cleanup_asusd_leftovers
+    systemctl restart asusd.service
+}
+
+cleanup_asusd_leftovers() {
+    if [[ -e /etc/modprobe.d/asusd.conf ]]; then
+        echo "-> Renaming old asusd graphics mode file, this file can be safely removed"
+        mv -vf /etc/modprobe.d/asusd.conf /etc/modprobe.d/asusd.old
+    fi
+}

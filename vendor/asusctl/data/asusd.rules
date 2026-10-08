@@ -1,0 +1,25 @@
+ENV{DMI_VENDOR}="$attr{[dmi/id]sys_vendor}"
+
+# Was previously "ASUSTeK COMPUTER INC.", but on ProArt PX13 the vendor is just "ASUS"
+ENV{DMI_VENDOR}!="ASUS*", GOTO="asusd_end"
+
+ENV{DMI_FAMILY}="$attr{[dmi/id]product_family}"
+ENV{DMI_FAMILY}=="*TUF*", GOTO="asusd_start"
+ENV{DMI_FAMILY}=="*ROG*", GOTO="asusd_start"
+ENV{DMI_FAMILY}=="*Zephyrus*", GOTO="asusd_start"
+ENV{DMI_FAMILY}=="*Strix*", GOTO="asusd_start"
+ENV{DMI_FAMILY}=="*Vivo*ook*", GOTO="asusd_start"
+ENV{DMI_FAMILY}=="*ASUSLaptop*", GOTO="asusd_start"
+ENV{DMI_FAMILY}=="*Zen*ook*", GOTO="asusd_start"
+ENV{DMI_FAMILY}=="*ProArt*", GOTO="asusd_start"
+ENV{DMI_FAMILY}=="*TX Air*", GOTO="asusd_start"
+ENV{DMI_FAMILY}=="*TX Gaming*", GOTO="asusd_start"
+ENV{DMI_FAMILY}=="*EXPERTBOOK*", GOTO="asusd_start"
+# No match so
+GOTO="asusd_end"
+
+LABEL="asusd_start"
+ACTION=="add|change", DRIVER=="asus-nb-wmi", TAG+="systemd", ENV{SYSTEMD_WANTS}+="asusd.service asus-shutdown.service"
+ACTION=="add|remove", DRIVER=="asus-nb-wmi", TAG+="systemd", ENV{SYSTEMD_WANTS}+="asusd.service asus-shutdown.service"
+
+LABEL="asusd_end"

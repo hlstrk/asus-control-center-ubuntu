@@ -1,0 +1,73 @@
+[Unit]
+Description=ASUS Notebook Control
+StartLimitInterval=500
+StartLimitBurst=5
+After=nvidia-powerd.service systemd-udevd.service
+Before=asus-shutdown.service
+
+[Service]
+Environment=IS_SERVICE=1
+# Reduce noisy span logs while keeping useful debug info for asusd and related crates.
+# Keep global level at info but allow debug for our crates; silence tracing::span (very noisy)
+# RUST_LOG format: <module>=<level>,...  (levels: error,warn,info,debug,trace)
+Environment=RUST_LOG="info,asusd=debug,rog_platform=debug,tracing::span=error,zbus::object_server=error,zbus::connection::handshake::common=error,zbus::connection::handshake::client=error"
+# required to prevent init issues with hid_asus and MCU
+ExecStartPre=/bin/sleep 1
+ExecStart=/usr/bin/asusd
+Restart=on-failure
+RestartSec=1
+Type=dbus
+BusName=xyz.ljones.Asusd
+SELinuxContext=system_u:system_r:unconfined_t:s0
+#SELinuxContext=system_u:object_r:modules_object_t:s0
+TimeoutSec=10
+
+AmbientCapabilities=
+CapabilityBoundingSet=
+MemoryDenyWriteExecute=true
+NoNewPrivileges=true
+LockPersonality=true
+KeyringMode=private
+
+PrivateBPF=true
+PrivateIPC=true
+PrivateDevices=false
+PrivateNetwork=false
+PrivateMounts=true
+PrivateTmp=true
+PrivateUsers=false
+
+ProtectProc=default
+ProtectSystem=strict
+ProtectHome=true
+
+ProtectClock=true
+ProtectControlGroups=strict
+ProtectHostname=true
+ProtectKernelLogs=true
+ProtectKernelModules=true
+ProtectKernelTunables=false
+
+RestrictAddressFamilies=AF_UNIX AF_NETLINK
+RestrictNetworkInterfaces=lo
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+
+# Create /etc/asusd (root, 0755) before namespacing so the hardened unit does
+# not fail 226/NAMESPACE on fresh source installs where the dir is not present.
+# This only creates the dir read-only; ReadWritePaths below grants the write
+# access the daemon needs to persist its config.
+ConfigurationDirectory=asusd
+
+ReadOnlyPaths=/
+ReadWritePaths=/etc/asusd/
+ReadWritePaths=/sys/
+RemoveIPC=true
+
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+
+IPAddressDeny=any
+SocketBindDeny=any

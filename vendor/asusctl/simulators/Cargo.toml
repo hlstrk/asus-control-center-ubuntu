@@ -1,0 +1,21 @@
+[package]
+name = "rog_simulators"
+license.workspace = true
+version.workspace = true
+readme.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "anime_sim"
+path = "src/simulator.rs"
+
+
+[dependencies]
+log.workspace = true
+uhid-virt.workspace = true
+rog_anime = { path = "../rog-anime", features = ["dbus"] }
+sdl2.workspace = true
+# features = ["gfx"]

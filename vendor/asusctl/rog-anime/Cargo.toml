@@ -1,0 +1,37 @@
+[package]
+name = "rog_anime"
+license.workspace = true
+version.workspace = true
+readme.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+edition.workspace = true
+documentation = "https://docs.rs/rog-anime"
+description = "Types useful for translating images and other data for display on the ASUS AniMe Matrix display"
+keywords = ["ROG", "ASUS", "AniMe"]
+exclude = ["data"]
+
+[features]
+default = ["dbus", "detect"]
+dbus = ["zbus"]
+detect = ["dmi_id"]
+
+[lib]
+name = "rog_anime"
+path = "src/lib.rs"
+
+[dependencies]
+png_pong.workspace = true
+pix.workspace = true
+gif.workspace = true
+log.workspace = true
+
+serde.workspace = true
+
+glam.workspace = true
+
+zbus = { workspace = true, optional = true }
+
+dmi_id = { path = "../dmi-id", optional = true }
+thiserror.workspace = true

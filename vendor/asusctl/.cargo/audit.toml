@@ -1,0 +1,13 @@
+# Configuration for `cargo audit` (RustSec advisory checks).
+#
+# The single ignored advisory below is NOT exploitable in this project:
+# RUSTSEC-2026-0009 (time 0.3.x, DoS via stack exhaustion) reaches the lockfile
+# only through notify-rust -> mac-notification-sys, which is a
+# `cfg(target_os = "macos")` dependency. This project builds and ships Linux
+# binaries exclusively, so the vulnerable code is never compiled in.
+# The fixed version (time >= 0.3.47) requires rustc 1.88, which would break
+# the Debian 13 / rustc 1.85 build this repository must support.
+[advisories]
+ignore = [
+    "RUSTSEC-2026-0009", # time: macOS-only transitive path, not exploitable
+]

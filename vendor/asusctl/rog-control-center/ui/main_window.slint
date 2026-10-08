@@ -1,0 +1,267 @@
+import { Palette, Button, VerticalBox } from "std-widgets.slint";
+import { AppSize } from "globals.slint";
+import { PageSystem, SystemPageData, AttrMinMax } from "pages/system.slint";
+import { SideBar } from "widgets/sidebar.slint";
+import { PageAbout } from "pages/about.slint";
+import { PageFans } from "pages/fans.slint";
+import { PageAnime, AnimePageData } from "pages/anime.slint";
+import { PageSlash, SlashPageData } from "pages/slash.slint";
+import { RogItem } from "widgets/common.slint";
+import { PageAura } from "pages/aura.slint";
+import { PageGPU, GPUPageData } from "pages/gpu.slint";
+import { PageBattery } from "pages/battery.slint";
+import { Node } from "widgets/graph.slint";
+export { Node }
+import { FanPageData, FanType, Profile } from "types/fan_types.slint";
+export { FanPageData, FanType, Profile }
+import { AuraPageData, AuraDevType, LaptopAuraPower, AuraPowerState, PowerZones, AuraEffect } from "types/aura_types.slint";
+export { AuraPageData, AuraDevType, LaptopAuraPower, AuraPowerState, PowerZones, AuraEffect }
+import { PageAppSettings, AppSettingsPageData, GlobalShortcutStatus } from "pages/app_settings.slint";
+
+export { AppSize, AttrMinMax, SystemPageData, AnimePageData, SlashPageData, AppSettingsPageData, GlobalShortcutStatus, GPUPageData }
+
+export component MainWindow inherits Window {
+    title: "ASUS Control Center";
+    always-on-top: false;
+    default-font-family: "Ubuntu";
+    default-font-size: 14px;
+    default-font-weight: 400;
+    icon: @image-url("../data/rog-control-center.png");
+    in property <[bool]> sidebar_items_avilable: [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true, // GPU Configuration
+        true, // Battery Info
+        true, // App Settings
+        true, // About
+    ];
+    private property <bool> show_notif;
+    // TODO: change if TUF on the logo in the menu on the main page
+    in property <bool> is_tuf: false;
+    private property <bool> fade_cover;
+    private property <bool> toast: false;
+    private property <string> toast_text: "I show when something is waiting";
+    callback show_toast(string);
+    show_toast(text) => {
+        toast = text != "";
+        toast_text = text;
+    }
+    callback clear_toast_if_matches(string);
+    clear_toast_if_matches(text) => {
+        if (toast && toast_text == text) {
+            toast = false;
+            toast_text = "";
+        }
+    }
+    callback exit-app();
+    callback show_notification(bool);
+    show_notification(yes) => {
+        show_notif = yes;
+        fade_cover = yes;
+    }
+    callback external_colour_change();
+    external_colour_change() => {
+        aura.external_colour_change();
+        aura.external_colour_change();
+    }
+    min-height: AppSize.height;
+    min-width: AppSize.width;
+    background: Palette.alternate-background;
+
+    HorizontalLayout {
+        padding: 0px;
+        VerticalLayout {
+            padding: 0px;
+            side-bar := SideBar {
+                model: [
+                    @tr("Menu1" => "System Control"),
+                    @tr("Menu2" => "Keyboard Aura"),
+                    @tr("Menu3" => "AniMe Matrix"),
+                    @tr("Menu4" => "Slash Lighting"),
+                    @tr("Menu5" => "Fan Curves"),
+                    @tr("Menu6" => "GPU Configuration"),
+                    @tr("Menu9" => "Battery Info"),
+                    @tr("Menu7" => "App Settings"),
+                    @tr("Menu8" => "About"),
+                ];
+                available: root.sidebar_items_avilable;
+                is_tuf: root.is_tuf;
+            }
+
+            Button {
+                height: 40px;
+                width: side-bar.width;
+                text: @tr("Quit App");
+                clicked() => {
+                    root.exit-app();
+                }
+            }
+        }
+
+        Rectangle {
+            background: Palette.background;
+            if(side-bar.current-item == 0): page := PageSystem {
+                width: root.width - side-bar.width;
+                height: root.height;
+            }
+
+            /*if(side-bar.current-item == 1):*/ aura := PageAura {
+                width: root.width - side-bar.width;
+                height: root.height;
+                visible: side-bar.current-item == 1;
+            }
+
+            if(side-bar.current-item == 2): PageAnime {
+                width: root.width - side-bar.width;
+                height: root.height;
+                visible: side-bar.current-item == 2;
+            }
+
+            if(side-bar.current-item == 3): PageSlash {
+                width: root.width - side-bar.width;
+                height: root.height;
+                visible: side-bar.current-item == 3;
+            }
+
+            if(side-bar.current-item == 4): fans := PageFans {
+                width: root.width - side-bar.width;
+                height: root.height;
+                visible: side-bar.current-item == 4;
+            }
+
+            if(side-bar.current-item == 5): PageGPU {
+                width: root.width - side-bar.width;
+                height: root.height;
+                visible: side-bar.current-item == 5;
+            }
+
+            if(side-bar.current-item == 6): PageBattery {
+                width: root.width - side-bar.width;
+                height: root.height;
+                visible: side-bar.current-item == 6;
+            }
+
+            if(side-bar.current-item == 7): PageAppSettings {
+                width: root.width - side-bar.width;
+                height: root.height;
+                visible: side-bar.current-item == 7;
+            }
+
+            if(side-bar.current-item == 8): PageAbout {
+                width: root.width - side-bar.width;
+                height: root.height;
+                visible: side-bar.current-item == 8;
+            }
+
+            if toast: Rectangle {
+                x: 0px;
+                y: root.height - self.height;
+                width: root.width - side-bar.width;
+                height: 40px;
+                opacity: 1.0;
+                background: Palette.selection-background;
+                clip: true;
+                TouchArea {
+                    height: 100%;
+                    width: 100%;
+                    clicked => {
+                        toast = false;
+                    }
+                }
+
+                Rectangle {
+                    height: 100%;
+                    width: 100%;
+                    background: Palette.control-background;
+                    Text {
+                        color: Palette.control-foreground;
+                        text: root.toast_text;
+                    }
+                }
+            }
+        }
+    }
+
+    if fade_cover: Rectangle {
+        x: 0px;
+        y: 0px;
+        width: root.width;
+        height: root.height;
+        background: Colors.rgba(25,33,23,20);
+        opacity: 0.7;
+        TouchArea {
+            height: 100%;
+            width: 100%;
+            clicked => {
+                // toolbar-dropdown.close();
+                if (show_notif) {
+                    show_notif = false;
+                }
+                fade_cover = false;
+            }
+        }
+    }
+
+
+    // // TODO: or use Dialogue
+    if show_notif: Rectangle {
+        x: root.width / 8;
+        y: root.height / 8;
+        height: (root.height / 8) * 6;
+        width: (root.width / 8) * 6;
+        TouchArea {
+            height: 100%;
+            width: 100%;
+            clicked => {
+                show_notif = false;
+                exit-app();
+            }
+        }
+
+        // TODO: add properties to display
+        Rectangle {
+            height: 100%;
+            width: 100%;
+            background: Palette.background;
+            Text {
+                text: "Click here to exit";
+            }
+        }
+    }
+
+    if SomeError.error_message != "": Rectangle {
+        x: 0px;
+        y: 0px;
+        width: root.width;
+        height: root.height;
+        background: Palette.background;
+        border-color: Palette.border;
+        border-width: 3px;
+        border-radius: 10px;
+
+        VerticalBox {
+            RogItem {
+                min-height: 50px;
+                max-height: 100px;
+                Text {
+                    text <=> SomeError.error_message;
+                    font-size: 18px;
+                }
+            }
+
+            Text {
+                text <=> SomeError.error_help;
+                horizontal-alignment: TextHorizontalAlignment.center;
+                vertical-alignment: TextVerticalAlignment.center;
+            }
+        }
+    }
+}
+
+export global SomeError {
+    in property <string> error_message: "";
+    in property <string> error_help: "";
+}

@@ -1,0 +1,33 @@
+name: Build and release Ubuntu package
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake pkg-config libudev-dev libusb-1.0-0-dev libfontconfig1-dev libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev gettext python3-gi gjs
+          rustup toolchain install 1.93.0 --profile minimal
+      - name: Verify panel behavior
+        run: |
+          gjs -m tests/profiles.js
+          bash -n scripts/*.sh
+          python3 -m py_compile scripts/package.py
+      - name: Build Ubuntu package
+        run: ./scripts/build.sh
+      - name: Publish tagged release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.deb dist/*.zip dist/SHA256SUMS \
+            --verify-tag --title "ASUS Control Center ${GITHUB_REF_NAME}" \
+            --notes-file docs/RELEASE.md

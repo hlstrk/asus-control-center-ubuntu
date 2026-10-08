@@ -1,0 +1,8 @@
+{
+  "uuid": "asus-control-center@hlstrk",
+  "name": "ASUS Control Center",
+  "description": "Animated ASUS performance profiles and AC power notifications for Ubuntu.",
+  "shell-version": ["46"],
+  "url": "https://github.com/hlstrk/asus-control-center-ubuntu",
+  "version": 1
+}

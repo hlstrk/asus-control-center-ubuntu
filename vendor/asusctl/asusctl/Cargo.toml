@@ -1,0 +1,42 @@
+[package]
+name = "asusctl"
+license.workspace = true
+version.workspace = true
+readme.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+edition.workspace = true
+
+[dependencies]
+rog_anime = { path = "../rog-anime" }
+rog_scsi = { path = "../rog-scsi" }
+rog_slash = { path = "../rog-slash" }
+rog_aura = { path = "../rog-aura" }
+rog_dbus = { path = "../rog-dbus" }
+rog_profiles = { path = "../rog-profiles" }
+rog_platform = { path = "../rog-platform" }
+dmi_id = { path = "../dmi-id" }
+
+log.workspace = true
+env_logger.workspace = true
+
+ron.workspace = true
+zbus.workspace = true
+argh.workspace = true
+
+[dev-dependencies]
+rog_dbus = { path = "../rog-dbus" }
+png.workspace = true
+
+[package.metadata.deb]
+license-file = ["../LICENSE", "4"]
+extended-description = """\
+An utility for Linux to control many aspects of various ASUS laptops
+but can also be used with non-asus laptops with reduced features."""
+depends = "$auto"
+section = "utility"
+priority = "optional"
+assets = [
+  ["target/release/asusctl", "usr/bin/", "755"],
+]

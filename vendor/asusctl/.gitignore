@@ -1,0 +1,33 @@
+/target
+vendor.tar.xz
+cargo-config
+.idea
+vendor
+vendor-*
+vendor_*
+.vscode-ctags
+.vscode
+.~lock.*
+*.ods#
+*.patch
+
+# gnome extension
+node-modules
+bindings/ts/*.d.ts
+bindings/ts/*.js.map
+desktop-extensions/gnome*/dist
+desktop-extensions/gnome*/@types/gir-generated
+desktop-extensions/gnome*/node_modules
+desktop-extensions/gnome*/schemas/gschemas.compiled
+desktop-extensions/gnome*/*.zip
+
+*.log
+
+# Compiled gettext catalogs — build artifacts, generated into OUT_DIR by rog-control-center/build.rs
+/rog-control-center/translations/*/LC_MESSAGES/*.mo
+
+# Mdbook
+/book/
+
+.envrc
+.direnv/

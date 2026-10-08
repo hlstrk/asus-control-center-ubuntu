@@ -1,0 +1,20 @@
+ASUS Control Center for Ubuntu
+https://github.com/hlstrk/asus-control-center-ubuntu
+
+Based on asusctl 6.5.0 by Luke Jones, Denis Benato and the ASUS Linux /
+OpenGamingCollective contributors. Their source and copyright notices are
+preserved in vendor/asusctl. The original repository is:
+https://github.com/OpenGamingCollective/asusctl
+
+Local changes: desktop layout and fan-tooltip refinements, Ubuntu packaging,
+and the GNOME performance-profile panel. The independent panel and local
+changes are distributed under MPL-2.0. See LICENSE and individual source files.
+
+The desktop GUI uses Slint. Slint offers GPLv3 and royalty-free desktop/mobile/web
+licensing. This desktop distribution uses the royalty-free option with attribution.
+https://slint.dev
+https://slint.dev/agreements/slint-royalty-free-license.pdf
+Other third-party files retain their individual license notices.
+
+This is an independent community project, not an official ASUS application.
+ASUS, ROG and TUF names and marks belong to their respective owners.

@@ -1,0 +1,23 @@
+[package]
+name = "rog_platform"
+license.workspace = true
+version.workspace = true
+readme.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+edition.workspace = true
+
+[dependencies]
+log.workspace = true
+serde.workspace = true
+zbus.workspace = true
+concat-idents.workspace = true
+udev.workspace = true
+inotify.workspace = true
+rusb.workspace = true
+thiserror.workspace = true
+nvml-wrapper.workspace = true
+
+[dev-dependencies]
+serde_json = { workspace = true, features = ["preserve_order"] }

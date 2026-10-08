@@ -1,0 +1,67 @@
+[package]
+name = "rog-control-center"
+license.workspace = true
+version.workspace = true
+readme.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+edition.workspace = true
+
+[features]
+default = []
+x11 = ["slint/backend-winit-x11"]
+# Optional tokio debug feature does not require nightly; remove RUSTFLAGS note.
+tokio-debug = ["console-subscriber"]
+rog_ally = []
+
+[dependencies]
+console-subscriber = { workspace = true, optional = true }
+
+ksni.workspace = true
+image.workspace = true
+ashpd.workspace = true
+
+asusd = { path = "../asusd" }
+config-traits = { path = "../config-traits" }
+rog_anime = { path = "../rog-anime" }
+rog_dbus = { path = "../rog-dbus" }
+rog_aura = { path = "../rog-aura" }
+rog_profiles = { path = "../rog-profiles" }
+rog_platform = { path = "../rog-platform" }
+rog_slash = { path = "../rog-slash" }
+dmi_id = { path = "../dmi-id" }
+
+argh.workspace = true
+log.workspace = true
+env_logger.workspace = true
+
+tokio.workspace = true
+serde.workspace = true
+zbus.workspace = true
+dirs.workspace = true
+notify-rust.workspace = true
+concat-idents.workspace = true
+futures-util.workspace = true
+thiserror.workspace = true
+udev.workspace = true
+serde_json.workspace = true
+
+slint.workspace = true
+
+[build-dependencies]
+slint-build.workspace = true
+
+[package.metadata.deb]
+license-file = ["../LICENSE", "4"]
+extended-description = """\
+The dbus server for asusctl and rog-control-center applications."""
+depends = "$auto"
+section = "utility"
+priority = "optional"
+assets = [
+  ["target/release/rog-control-center", "usr/bin/", "755"],
+  ["../rog_gui-fakeinstall/usr/share/applications/*", "usr/share/share/applications/", "644"],
+  ["../rog_gui-fakeinstall/usr/share/icons/hicolor/512x512/apps/*", "usr/share/icons/hicolor/512x512/apps", "644"],
+  ["../rog_gui-fakeinstall/usr/share/icons/hicolor/scalable/status/*", "usr/share/icons/hicolor/scalable/status", "644"],
+]

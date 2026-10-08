@@ -1,0 +1,63 @@
+[package]
+name = "asusd"
+license.workspace = true
+version.workspace = true
+readme.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "asusd"
+path = "src/daemon.rs"
+
+[dependencies]
+config-traits = { path = "../config-traits" }
+rog_anime = { path = "../rog-anime", features = ["dbus"] }
+rog_slash = { path = "../rog-slash", features = ["dbus"] }
+rog_aura = { path = "../rog-aura", features = ["dbus"] }
+rog_scsi = { path = "../rog-scsi", features = ["dbus"] }
+rog_platform = { path = "../rog-platform" }
+rog_profiles = { path = "../rog-profiles" }
+dmi_id = { path = "../dmi-id" }
+udev.workspace = true
+inotify.workspace = true
+
+mio.workspace = true
+tokio.workspace = true
+# console-subscriber = "0.2.0"
+
+# cli and logging
+log.workspace = true
+env_logger.workspace = true
+
+futures-util.workspace = true
+zbus.workspace = true
+logind-zbus.workspace = true
+thiserror.workspace = true
+
+# serialisation
+serde.workspace = true
+
+concat-idents.workspace = true
+
+[dev-dependencies]
+cargo-husky.workspace = true
+ron.workspace = true
+
+[package.metadata.deb]
+license-file = ["../LICENSE", "4"]
+extended-description = """\
+The dbus server for asusctl and rog-control-center applications."""
+depends = "$auto"
+section = "utility"
+priority = "optional"
+assets = [
+  ["target/release/asusd", "usr/bin/", "755"],
+  ["../asusd-fakeinstall/usr/lib/systemd/system/*", "usr/lib/systemd/system/", "644"],
+  ["../asusd-fakeinstall/usr/lib/udev/rules.d/*", "usr/lib/udev/rules.d/", "644"],
+  ["../asusd-fakeinstall/usr/share/asusd/*", "usr/share/share/asusd/", "644"],
+  ["../asusd-fakeinstall/usr/share/dbus-1/system.d/*", "usr/share/dbus-1/system.d/", "644"],
+]

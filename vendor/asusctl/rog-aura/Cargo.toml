@@ -1,0 +1,27 @@
+[package]
+name = "rog_aura"
+license.workspace = true
+version.workspace = true
+readme.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+edition.workspace = true
+description = "Types useful for fancy keyboards on ASUS ROG laptops"
+keywords = ["ROG", "ASUS", "Aura"]
+exclude = ["data"]
+
+[features]
+default = ["dbus", "ron"]
+dbus = ["zbus"]
+
+[dependencies]
+serde.workspace = true
+zbus = { workspace = true, optional = true }
+dmi_id = { path = "../dmi-id" }
+
+# cli and logging
+log.workspace = true
+
+ron = { workspace = true, optional = true }
+thiserror.workspace = true

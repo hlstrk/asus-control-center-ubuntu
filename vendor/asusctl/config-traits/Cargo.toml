@@ -1,0 +1,15 @@
+[package]
+name = "config-traits"
+license.workspace = true
+version.workspace = true
+readme.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde.workspace = true
+ron.workspace = true
+
+log.workspace = true

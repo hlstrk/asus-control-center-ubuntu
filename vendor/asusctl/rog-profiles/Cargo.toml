@@ -1,0 +1,22 @@
+[package]
+name = "rog_profiles"
+license.workspace = true
+version.workspace = true
+readme.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+edition.workspace = true
+
+[features]
+default = ["dbus"]
+dbus = ["zbus"]
+
+[dependencies]
+log.workspace = true
+udev.workspace = true
+serde.workspace = true
+rog_platform = { path = "../rog-platform" }
+
+zbus = { workspace = true, optional = true }
+thiserror.workspace = true

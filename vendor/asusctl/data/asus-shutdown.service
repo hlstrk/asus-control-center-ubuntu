@@ -1,0 +1,65 @@
+[Unit]
+Description=ASUS Deferred Shutdown Handler
+Before=shutdown.target reboot.target halt.target
+After=asusd.service systemd-logind.service network.target basic.target
+After=asusd.service
+Requires=asusd.service
+Requires=asusd.service dbus.service
+PartOf=asusd.service
+
+[Service]
+Environment=IS_SERVICE=1
+Environment=RUST_LOG="info,asus_shutdown=debug,zbus::connection::handshake::common=error,zbus::connection::handshake::client=error"
+ExecStart=/usr/bin/asus-shutdown
+Restart=on-failure
+RestartSec=1
+Type=simple
+SELinuxContext=system_u:system_r:unconfined_t:s0
+KillSignal=SIGTERM
+SendSIGKILL=no
+TimeoutStopSec=45
+
+AmbientCapabilities=
+CapabilityBoundingSet=CAP_SYS_MODULE CAP_SYS_ADMIN
+MemoryDenyWriteExecute=true
+NoNewPrivileges=true
+LockPersonality=true
+KeyringMode=private
+
+PrivateBPF=true
+PrivateIPC=true
+PrivateDevices=false
+PrivateNetwork=true
+PrivateMounts=true
+PrivateTmp=true
+PrivateUsers=false
+
+ProtectProc=default
+ProtectSystem=strict
+ProtectHome=true
+
+ProtectClock=true
+ProtectControlGroups=strict
+ProtectHostname=true
+ProtectKernelLogs=true
+ProtectKernelModules=false
+ProtectKernelTunables=true
+
+RestrictAddressFamilies=AF_UNIX
+RestrictNetworkInterfaces=lo
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+
+ReadOnlyPaths=/
+RemoveIPC=true
+
+SystemCallArchitectures=native
+SystemCallFilter=@system-service @module
+SystemCallFilter=~@resources
+
+IPAddressDeny=any
+SocketBindDeny=any
+
+[Install]
+WantedBy=multi-user.target

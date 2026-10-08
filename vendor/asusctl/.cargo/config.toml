@@ -1,0 +1,6 @@
+# Prefer dependency versions whose `rust-version` is compatible with the
+# workspace `rust-version`. Without this, `cargo update` picks the newest
+# semver-compatible versions, some of which require a newer rustc and fail
+# to build.
+[resolver]
+incompatible-rust-versions = "fallback"
