@@ -6,7 +6,7 @@ from pathlib import Path
 repo = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
 parser.add_argument('--target', type=Path, default=repo/'vendor/asusctl/target/release')
-parser.add_argument('--version', default='1.0.1')
+parser.add_argument('--version', default='1.2.0')
 args = parser.parse_args()
 source = repo/'vendor/asusctl'
 dist = repo/'dist';dist.mkdir(exist_ok=True)
@@ -36,7 +36,7 @@ with tempfile.TemporaryDirectory(prefix='asus-deb-') as tmp:
         install(file,'usr/share/locale/'+file.parents[1].name+'/LC_MESSAGES/'+file.name)
     # Ship the extension as a template. Enabling it is a per-user action.
     shutil.copytree(repo/'extension',stage/'usr/share/asus-control-center/extension')
-    for src, name in [('install-panel.sh', 'asus-control-panel-install'), ('uninstall-panel.sh', 'asus-control-panel-remove')]:
+    for src, name in [('install-panel.sh', 'asus-control-panel-install'), ('uninstall-panel.sh', 'asus-control-panel-remove'), ('install.sh', 'asus-control-install')]:
         dest = stage/'usr/bin'/name
         shutil.copy2(repo/'scripts'/src, dest)
         dest.chmod(0o755)
@@ -44,7 +44,7 @@ with tempfile.TemporaryDirectory(prefix='asus-deb-') as tmp:
 Version: {args.version}
 Architecture: amd64
 Maintainer: hlstrk <hlstrk@users.noreply.github.com>
-Depends: python3, python3-gi, libc6 (>= 2.39), libgcc-s1, libfontconfig1, libudev1, libusb-1.0-0, libxkbcommon0, libxkbcommon-x11-0, libwayland-client0
+Depends: curl, ca-certificates, xdg-utils, python3, python3-gi, libc6 (>= 2.39), libgcc-s1, libfontconfig1, libudev1, libusb-1.0-0, libxkbcommon0, libxkbcommon-x11-0, libwayland-client0
 Conflicts: asusctl-local
 Replaces: asusctl-local
 Homepage: https://github.com/hlstrk/asus-control-center-ubuntu

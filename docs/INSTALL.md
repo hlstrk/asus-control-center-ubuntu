@@ -4,26 +4,27 @@ The verified system is an ASUS TUF A15 FA507NV running GNOME Shell 46, X11,
 and kernel 7.0.0-31-generic. The upstream recommendation is Linux 6.19 or newer.
 Other ASUS models expose different controls; this is not a promise of universal support.
 
-## 1. Install the desktop controls
+## One script
 
-Download the [Ubuntu package](../packages/v1.0.1/asus-control-center_1.0.1_amd64.deb)
-and compare it with [SHA256SUMS](../packages/v1.0.1/SHA256SUMS). Save the package
-in Downloads, then install it:
+From your normal desktop account, run:
 
 ```bash
-sudo apt install ~/Downloads/asus-control-center_1.0.1_amd64.deb
-systemctl is-active asusd
-asusctl info
+curl -fsSL https://raw.githubusercontent.com/hlstrk/asus-control-center-ubuntu/v1.2.0/scripts/install.sh -o /tmp/asus-control-install.sh && sudo bash /tmp/asus-control-install.sh
 ```
 
-This installs the daemon, CLI and desktop app. It does not replace your kernel,
-NVIDIA driver, or nvidia-powerd configuration. The daemon starts automatically.
+The script validates Ubuntu package checksums, installs the `.deb` using apt,
+starts asusd and enables the panel for `SUDO_USER`. It preserves other extensions
+and leaves your kernel, NVIDIA driver and GPU mode unchanged. The package manages
+installed files and removal; the script removes its download scratch directory.
 
-## 2. Add the top-panel selector
+For an offline install, download the matching `.deb` and run:
 
 ```bash
-asus-control-panel-install
+sudo bash scripts/install.sh --package ~/Downloads/asus-control-center_1.2.0_amd64.deb
 ```
+
+A root SSH session can explicitly set `INSTALL_USER` to the target desktop user.
+Do not run the desktop GUI as root.
 
 On **X11**, press **Alt+F2**, type **r**, then press Enter. On **Wayland**, sign
 out and sign in; save your work before signing out. Other panel extensions are preserved.
@@ -40,7 +41,7 @@ Battery Saver maps to the ASUS **Quiet** profile. Changing it selects the curren
 profile; it does not overwrite your saved AC and battery policy. The existing
 asusd policy may select a different profile when the adapter is connected or removed.
 
-## 3. Power notifications
+## Power notifications
 
 The panel checks power supplies every two seconds. Two consistent changed samples
 confirm a plug/unplug transition. GNOME presents a notification with the power source,
@@ -49,6 +50,19 @@ still apply. A startup notification is intentionally omitted. The **Test** butto
 in the panel previews the notification without changing the power state.
 
 ![Native GNOME power notification preview](images/power-notification-preview.png)
+
+## Desktop layout
+
+![Basic controls](images/desktop-overview.png)
+
+The **Basic / Advanced** tabs change which controls are visible. Advanced adds fan
+curves, GPU mode and detailed power policy; Basic does not reset your hardware settings.
+Switching back to Basic returns to System Control. Closing the window hides it; the
+panel gear can open it again. Quit App exits the desktop process.
+
+![About and maintainer links](images/desktop-about.png)
+
+See [GPU monitoring](GPU.md) for AMD/NVIDIA sensor and driver diagnostics.
 
 ## Build from source
 

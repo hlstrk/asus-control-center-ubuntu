@@ -18,3 +18,5 @@
 .asus-power-icon { icon-size: 18px; color: #efb66a; }
 .asus-notification-test { color: #c8c4bd; font-size: 10px; padding: 3px 7px; border: 1px solid #55514a; border-radius: 4px; }
 .asus-notification-test:hover, .asus-notification-test:focus { color: #ffffff; border-color: #efb66a; }
+.asus-open-button { padding: 6px; border-radius: 6px; }
+.asus-open-button:hover, .asus-open-button:focus { background-color: rgba(239,182,106,0.12); }

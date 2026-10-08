@@ -85,6 +85,12 @@ fn main() -> Result<()> {
         // return Ok(());
     }
 
+    rog_control_center::slint::BackendSelector::new()
+        .backend_name("winit".into())
+        .with_winit_window_attributes_hook(|attributes| attributes.with_transparent(true))
+        .select()
+        .expect("Could not initialize the desktop backend");
+
     // start tokio
     let rt = Runtime::new().expect("Unable to create Runtime");
     // Enter the runtime so that `tokio::spawn` is available immediately.

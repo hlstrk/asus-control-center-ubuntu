@@ -18,19 +18,35 @@ AC/battery switching.
 
 ## Installation
 
-Follow the [screen-by-screen installation guide](docs/INSTALL.md). The panel requires
-GNOME Shell 46. The tested combination is Ubuntu 24.04, X11 and a TUF A15 FA507NV.
-Upstream recommends Linux 6.19 or newer.
-
-Download the [Ubuntu package](packages/v1.0.1/asus-control-center_1.0.1_amd64.deb), then:
+Run one installer from your desktop account:
 
 ```bash
-sudo apt install ~/Downloads/asus-control-center_1.0.1_amd64.deb
-asus-control-panel-install
+curl -fsSL https://raw.githubusercontent.com/hlstrk/asus-control-center-ubuntu/v1.2.0/scripts/install.sh -o /tmp/asus-control-install.sh && sudo bash /tmp/asus-control-install.sh
 ```
 
-On X11, restart the shell with Alt+F2 → `r` → Enter. On Wayland, sign out and back in.
-The [source build instructions](docs/INSTALL.md#build-from-source) remain available.
+It downloads and verifies the versioned Ubuntu package, installs it with apt and
+adds the panel to your own account. On X11, restart the shell with Alt+F2 → `r` →
+Enter. On Wayland, sign out and back in when ready. It does not reboot the laptop.
+
+The `.deb` remains useful: apt tracks installed files, upgrades and removal, while
+the script handles the per-user panel setup. You do not need to download it manually.
+[Packages](packages/v1.2.0) · [Illustrated guide](docs/INSTALL.md) · [Source build](docs/INSTALL.md#build-from-source)
+
+## Basic and Advanced
+
+**Basic** keeps live monitoring, profiles, keyboard lighting, battery limits and
+application information. **Advanced** additionally exposes fan curves, graphics
+mode, ASUS power limits and detailed power policy. The mode tabs are in the title bar.
+
+The desktop has a subtly translucent surface and rounded custom chrome. Text stays
+opaque. You can drag the title bar, resize from the bottom-right corner and use the
+minimize/maximize/close buttons. The panel gear opens the desktop controls.
+
+## GPU monitoring
+
+Version 1.2.0 fixes AMD APU identification when the internal connector is `eDP-2`
+or when a MUX routes the display differently. Sensor readings are collected from
+the detected device rather than a hard-coded DRM card number. [AMD/NVIDIA GPU guide](docs/GPU.md).
 
 ## Screenshots
 
@@ -39,6 +55,10 @@ The [source build instructions](docs/INSTALL.md#build-from-source) remain availa
 | ![Balanced profile](docs/images/panel-balanced.png) | ![Battery Saver profile](docs/images/panel-battery-saver.png) |
 
 ![Desktop system overview](docs/images/desktop-overview.png)
+
+![Advanced controls](docs/images/desktop-advanced.png)
+
+![Maintainer and upstream credits](docs/images/desktop-about.png)
 
 ![Fan curves with labels on hover](docs/images/desktop-fan-curves.png)
 
@@ -52,6 +72,10 @@ bash -n scripts/*.sh
 ```
 
 [Validation](docs/VALIDATION.md) · [Design notes](docs/DESIGN.md) · [Contributing](CONTRIBUTING.md) · [License](LICENSE)
+
+## Maintainer
+
+Ubuntu edition and GNOME panel by **Halis Türk ([hlstrk](https://github.com/hlstrk))**.
 
 ## Credits
 

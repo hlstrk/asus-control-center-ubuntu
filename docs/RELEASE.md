@@ -1,13 +1,11 @@
-Ubuntu 24.04 desktop build with a GNOME 46 top-panel selector.
+ASUS Control Center for Ubuntu 1.2.0
 
-- Animated Performance / Balanced / Battery Saver controls.
-- Debounced charger connect/disconnect notifications.
-- Desktop layout improvements and fan-graph labels shown on interaction.
-- X11-enabled Slint desktop built on Ubuntu 24.04.
+- Single sudo installation script for the desktop and user panel.
+- Basic / Advanced modes, subtle translucency and rounded window chrome.
+- Clickable panel gear and maintainer/project links in About.
+- AMD APU detection fix for eDP numbering and MUX routing.
+- Animated profiles and native power notifications retained.
 
-Install the `.deb`, then use the repository's `scripts/install-panel.sh` to enable
-this panel for your account. On X11 restart the shell; on Wayland sign in again.
-See [the illustrated guide](https://github.com/hlstrk/asus-control-center-ubuntu/blob/main/docs/INSTALL.md).
-Battery Saver maps to ASUS Quiet. Device-specific controls depend on the kernel and firmware.
-
-Source, upstream notices and local changes are included in the tagged repository.
+See the README for the installer and docs/GPU.md for AMD/NVIDIA diagnostics.
+The desktop package targets Ubuntu 24.04 amd64; the panel targets GNOME 46.
+Source and upstream notices are included in the version tag.

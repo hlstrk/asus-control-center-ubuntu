@@ -1,5 +1,5 @@
 import { Palette, Button, VerticalBox } from "std-widgets.slint";
-import { AppSize } from "globals.slint";
+import { AppSize, AppMode } from "globals.slint";
 import { PageSystem, SystemPageData, AttrMinMax } from "pages/system.slint";
 import { SideBar } from "widgets/sidebar.slint";
 import { PageAbout } from "pages/about.slint";
@@ -20,9 +20,37 @@ import { PageAppSettings, AppSettingsPageData, GlobalShortcutStatus } from "page
 
 export { AppSize, AttrMinMax, SystemPageData, AnimePageData, SlashPageData, AppSettingsPageData, GlobalShortcutStatus, GPUPageData }
 
+component ModeChoice inherits Rectangle {
+    in property <bool> active;
+    in property <string> text;
+    callback clicked();
+    width: 86px; height: 32px;
+    border-radius: 7px;
+    background: root.active ? #efb66a : #ffffff09;
+    border-width: 1px;
+    border-color: focus.has-focus ? #ffffff : transparent;
+    accessible-role: button;
+    accessible-label: root.active ? root.text + " selected" : root.text;
+    forward-focus: focus;
+    animate background { duration: 120ms; }
+    Text { text: root.text; color: root.active ? #251a0d : #ded8ce; font-size: 12px; font-weight: 600; horizontal-alignment: center; vertical-alignment: center; }
+    focus := FocusScope {
+        key-pressed(event) => {
+            if (event.text == " " || event.text == "\n") { root.clicked(); return accept; }
+            return reject;
+        }
+    }
+    TouchArea { clicked => { focus.focus(); root.clicked(); } }
+}
+
 export component MainWindow inherits Window {
     title: "ASUS Control Center";
     always-on-top: false;
+    no-frame: true;
+    callback drag-window();
+    callback resize-window();
+    callback close-window();
+    callback open-url(string);
     default-font-family: "Ubuntu";
     default-font-size: 14px;
     default-font-weight: 400;
@@ -69,9 +97,52 @@ export component MainWindow inherits Window {
     }
     min-height: AppSize.height;
     min-width: AppSize.width;
-    background: Palette.alternate-background;
+    background: transparent;
+
+    frame := Rectangle {
+      x: 3px; y: 3px;
+      width: root.width - 6px;
+      height: root.height - 6px;
+      border-radius: 18px;
+      border-width: 1px;
+      border-color: #ffffff22;
+      background: #1b1f25ed;
+      clip: true;
+
+      Rectangle {
+        x: 0px; y: 0px;
+        width: frame.width;
+        height: 52px;
+        background: transparent;
+        TouchArea {
+            width: 100%; height: 100%;
+            pointer-event(event) => {
+                if (event.kind == PointerEventKind.down && event.button == PointerEventButton.left) { root.drag-window(); }
+            }
+        }
+        HorizontalLayout {
+            width: parent.width;
+            height: parent.height;
+            padding-left: 22px;
+            padding-right: 12px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            spacing: 8px;
+            Text { text: "ASUS Control Center"; font-size: 12px; font-weight: 700; color: #f4f1e9; vertical-alignment: center; }
+            Rectangle {}
+            ModeChoice { text: "Basic"; active: !AppMode.advanced; clicked => { AppMode.advanced = false; side-bar.current-item = 0; } }
+            ModeChoice { text: "Advanced"; active: AppMode.advanced; clicked => { AppMode.advanced = true; } }
+            Rectangle { width: 12px; }
+            Button { text: "−"; accessible-label: "Minimize window"; width: 32px; clicked => { root.minimized = true; } }
+            Button { text: "□"; accessible-label: "Maximize or restore window"; width: 32px; clicked => { root.maximized = !root.maximized; } }
+            Button { text: "×"; accessible-label: "Close window"; width: 32px; clicked => { root.close-window(); } }
+        }
+      }
 
     HorizontalLayout {
+        y: 52px;
+        width: frame.width;
+        height: frame.height - 52px;
         padding: 0px;
         VerticalLayout {
             padding: 0px;
@@ -87,7 +158,14 @@ export component MainWindow inherits Window {
                     @tr("Menu7" => "App Settings"),
                     @tr("Menu8" => "About"),
                 ];
-                available: root.sidebar_items_avilable;
+                available: [
+                    root.sidebar_items_avilable[0], root.sidebar_items_avilable[1],
+                    root.sidebar_items_avilable[2] && AppMode.advanced,
+                    root.sidebar_items_avilable[3] && AppMode.advanced,
+                    root.sidebar_items_avilable[4] && AppMode.advanced,
+                    root.sidebar_items_avilable[5] && AppMode.advanced,
+                    root.sidebar_items_avilable[6], root.sidebar_items_avilable[7], root.sidebar_items_avilable[8],
+                ];
                 is_tuf: root.is_tuf;
             }
 
@@ -102,64 +180,65 @@ export component MainWindow inherits Window {
         }
 
         Rectangle {
-            background: Palette.background;
+            background: transparent;
             if(side-bar.current-item == 0): page := PageSystem {
-                width: root.width - side-bar.width;
-                height: root.height;
+                width: frame.width - side-bar.width;
+                height: frame.height - 52px;
             }
 
             /*if(side-bar.current-item == 1):*/ aura := PageAura {
-                width: root.width - side-bar.width;
-                height: root.height;
+                width: frame.width - side-bar.width;
+                height: frame.height - 52px;
                 visible: side-bar.current-item == 1;
             }
 
             if(side-bar.current-item == 2): PageAnime {
-                width: root.width - side-bar.width;
-                height: root.height;
+                width: frame.width - side-bar.width;
+                height: frame.height - 52px;
                 visible: side-bar.current-item == 2;
             }
 
             if(side-bar.current-item == 3): PageSlash {
-                width: root.width - side-bar.width;
-                height: root.height;
+                width: frame.width - side-bar.width;
+                height: frame.height - 52px;
                 visible: side-bar.current-item == 3;
             }
 
             if(side-bar.current-item == 4): fans := PageFans {
-                width: root.width - side-bar.width;
-                height: root.height;
+                width: frame.width - side-bar.width;
+                height: frame.height - 52px;
                 visible: side-bar.current-item == 4;
             }
 
             if(side-bar.current-item == 5): PageGPU {
-                width: root.width - side-bar.width;
-                height: root.height;
+                width: frame.width - side-bar.width;
+                height: frame.height - 52px;
                 visible: side-bar.current-item == 5;
             }
 
             if(side-bar.current-item == 6): PageBattery {
-                width: root.width - side-bar.width;
-                height: root.height;
+                width: frame.width - side-bar.width;
+                height: frame.height - 52px;
                 visible: side-bar.current-item == 6;
             }
 
             if(side-bar.current-item == 7): PageAppSettings {
-                width: root.width - side-bar.width;
-                height: root.height;
+                width: frame.width - side-bar.width;
+                height: frame.height - 52px;
                 visible: side-bar.current-item == 7;
             }
 
             if(side-bar.current-item == 8): PageAbout {
-                width: root.width - side-bar.width;
-                height: root.height;
+                open-url(url) => { root.open-url(url); }
+                width: frame.width - side-bar.width;
+                height: frame.height - 52px;
                 visible: side-bar.current-item == 8;
             }
 
             if toast: Rectangle {
                 x: 0px;
                 y: root.height - self.height;
-                width: root.width - side-bar.width;
+                width: frame.width - side-bar.width;
                 height: 40px;
                 opacity: 1.0;
                 background: Palette.selection-background;
@@ -189,7 +268,7 @@ export component MainWindow inherits Window {
         x: 0px;
         y: 0px;
         width: root.width;
-        height: root.height;
+        height: frame.height - 52px;
         background: Colors.rgba(25,33,23,20);
         opacity: 0.7;
         TouchArea {
@@ -236,7 +315,7 @@ export component MainWindow inherits Window {
         x: 0px;
         y: 0px;
         width: root.width;
-        height: root.height;
+        height: frame.height - 52px;
         background: Palette.background;
         border-color: Palette.border;
         border-width: 3px;
@@ -258,6 +337,15 @@ export component MainWindow inherits Window {
                 vertical-alignment: TextVerticalAlignment.center;
             }
         }
+    }
+      Text { x: frame.width - 20px; y: frame.height - 20px; text: "⋰"; color: #9da4ac; }
+      TouchArea {
+        x: frame.width - 22px; y: frame.height - 22px; width: 22px; height: 22px;
+        mouse-cursor: nwse-resize;
+        pointer-event(event) => {
+            if (event.kind == PointerEventKind.down && event.button == PointerEventButton.left) { root.resize-window(); }
+        }
+      }
     }
 }
 

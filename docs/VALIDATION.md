@@ -1,26 +1,24 @@
-# Validation for 1.0.1
+# Validation for 1.2.0
 
-Test machine: ASUS TUF A15 FA507NV, Ubuntu 24.04, GNOME Shell 46, X11,
-kernel 7.0.0-31-generic.
+Test hardware: ASUS TUF A15 FA507NV, AMD Radeon 680M and NVIDIA RTX 4060,
+Ubuntu 24.04, GNOME 46, X11, kernel 7.0.0-31-generic.
 
-- Release workspace build with Cargo.lock and X11 enabled: passed.
-- Package installation and asusd service check: passed.
-- Panel tests for profile mapping, initial state, debounce, disconnect/reconnect,
-  unknown supply state, USB-PD and battery percentage: passed.
-- Live panel switching: Balanced, Quiet (Battery Saver), Performance verified
-  against `asusctl profile get`; Performance restored after the test.
-- Animated highlight verified in the captured GIF.
-- Native notification preview exercised through the panel's Test button.
-- Extension disable/enable: returned to ACTIVE without a reported JavaScript error.
-- Screenshots inspected at the desktop's minimum window size and the native panel.
-- ClamAV package/extension scan: no detections. This is not a safety guarantee.
-- Package checksums verified against SHA256SUMS.
+- Locked release workspace build with X11 and native window access enabled.
+- GPU regression suite: 13 passed, 1 ignored hardware test, 0 failures.
+- APU classification covered with eDP-2, no connected panel and a MUX-routed NVIDIA panel.
+- AMD discrete Radeon RX classification remains discrete.
+- Real AMD iGPU temperature/utilization and NVIDIA measurements checked against Linux sensor files.
+- Panel profile/AC state tests retained, including debounce and unknown states.
+- Basic/Advanced views and About inspected in the actual application.
+- Installer refuses non-root execution; package/user setup tested with the target desktop account.
+- Native window drag, resize, minimize, maximize, hide and reopen checks.
+- Updated package checksums and ClamAV scan.
 
-A physical adapter unplug/replug test was not performed. Its state transitions were
-covered by filesystem fixtures; notification presentation was tested separately.
-Wayland, other GNOME versions and other laptop models were not tested.
-The full upstream Rust PR verification suite was not run for this downstream release.
+Wayland, other GNOME versions and other laptop models have not been tested.
+Intel iGPU telemetry is not validated. The complete upstream PR verification suite
+was not run; this is a downstream release and no upstream PR was submitted.
+Physical charger transitions were simulated using filesystem fixtures; the native
+notification presentation was exercised separately through its Test button.
 
-GitHub Actions could not start because the account was locked by a billing issue.
-The downloadable packages in `packages/v1.0.1` were built locally on Ubuntu 24.04.
-The workflow remains available for future hosted builds once that account issue is resolved.
+GitHub Actions is blocked by the account billing issue. Packages are built locally
+on Ubuntu; the hosted workflow remains available after that account issue is resolved.

@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex, OnceLock, Weak};
 
 use log::error;
 use slint::ComponentHandle;
+use slint::winit_030::WinitWindowAccessor;
 
 use crate::MainWindow;
 use crate::config::Config;
@@ -142,6 +143,10 @@ impl WindowController {
         let Some(ui) = state.ui.as_ref() else {
             return;
         };
+        ui.window().with_winit_window(|window| {
+            window.set_minimized(false);
+            window.focus_window();
+        });
         match ui.window().show() {
             Ok(()) => set_app_state(&self.0.app_state, AppState::MainWindowOpen),
             Err(err) => error!("Failed to show window: {err}"),

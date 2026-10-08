@@ -416,58 +416,16 @@ impl Device {
                 let class = class.to_string_lossy();
                 // Match only Nvidia or AMD display devices
                 if is_gpu_vendor(&id) && is_display_class(&class) {
-                    let mut dgpu = false;
-                    // Check connected displays to distinguish dGPU from iGPU.
-                    // eDP-1 is the internal panel, always on iGPU.
+                    // A MUX can route eDP to either GPU, and connector numbering is not stable.
                     let displays = find_connected_displays(device.syspath()).unwrap_or_default();
-                    if !displays.iter().any(|d| d == "eDP-1") {
-                        trace!(
-                            "Matched dGPU {id} at {:?} by checking display connections",
-                            device.sysname()
-                        );
-                        dgpu = true;
-                    } else {
-                        trace!(
-                            "Device {id} at {:?} appears to be the iGPU",
-                            device.sysname()
-                        );
-                    }
-                    if !dgpu && id.starts_with(AMD_PCI_VENDOR) {
-                        trace!(
-                            "Found dGPU Device {id} without boot_vga attribute at {:?}",
-                            device.sysname()
-                        );
-                        // Fallback: check hwmon for AMD iGPU detection
-                        let mut dev_path = PathBuf::from(device.syspath());
-                        dev_path.push("hwmon");
-
-                        let hwmon_n_opt = match dev_path.read_dir() {
-                            Ok(mut entries) => entries.next(),
-                            Err(e) => {
-                                trace!("Error reading hwmon directory: {}", e);
-                                None
-                            }
-                        };
-
-                        if let Some(Ok(hwmon_n)) = hwmon_n_opt {
-                            let mut hwmon_path = hwmon_n.path();
-                            hwmon_path.push("in1_input");
-                            dgpu = !hwmon_path.exists();
-                        }
-                    }
-                    if !dgpu {
-                        if let Some(label) = device.property_value("ID_MODEL_FROM_DATABASE") {
-                            trace!(
-                                "Found ID_MODEL_FROM_DATABASE property {id} at {:?} : {label:?}",
-                                device.sysname()
-                            );
-                            dgpu = lspci_dgpu_check(&label.to_string_lossy());
-                        } else if let Some(model) = device.property_value("ID_MODEL") {
-                            dgpu = lspci_dgpu_check(&model.to_string_lossy());
-                        } else if id.starts_with(NVIDIA_PCI_VENDOR) {
-                            dgpu = true;
-                        }
-                    }
+                    let apu_voltage = fs::read_dir(device.syspath().join("hwmon"))
+                        .ok()
+                        .is_some_and(|entries| entries.flatten().any(|e| e.path().join("in1_input").exists()));
+                    let label = device.property_value("ID_MODEL_FROM_DATABASE")
+                        .or_else(|| device.property_value("ID_MODEL"))
+                        .map(|v| v.to_string_lossy().into_owned())
+                        .unwrap_or_default();
+                    let dgpu = classify_discrete_gpu(&id, &label, apu_voltage, &displays);
 
                     if dgpu {
                         info!("Found dgpu {id} at {:?}", device.sysname());
@@ -489,10 +447,29 @@ impl Device {
 
 // --- Utility functions ---
 
+/// Classify GPUs using vendor/model and the AMD APU northbridge-voltage sensor.
+/// Connector indices are a fallback only; they do not identify a GPU's role.
+fn classify_discrete_gpu(id: &str, model: &str, apu_voltage: bool, displays: &[String]) -> bool {
+    if id.to_uppercase().starts_with(NVIDIA_PCI_VENDOR) {
+        return true;
+    }
+    if id.to_uppercase().starts_with(AMD_PCI_VENDOR) && apu_voltage {
+        return false;
+    }
+    if lspci_dgpu_check(model) {
+        return true;
+    }
+    if displays.iter().any(|name| name.starts_with("eDP-")) {
+        return false;
+    }
+    let integrated_models = ["Rembrandt", "Phoenix", "Renoir", "Cezanne", "Raphael", "Strix", "Radeon Graphics", "Radeon 680M", "Radeon 780M", "Radeon 890M"];
+    !integrated_models.iter().any(|name| model.contains(name))
+}
+
 /// Check a device model or lspci label string for dGPU patterns.
 pub fn lspci_dgpu_check(label: &str) -> bool {
     for pat in [
-        "Radeon RX", "AMD/ATI", "GeForce", "Geforce", "Quadro", "T1200",
+        "Radeon RX", "GeForce", "Geforce", "Quadro", "T1200",
     ] {
         if label.contains(pat) {
             return true;
@@ -695,6 +672,21 @@ pub fn get_gpu_telemetry() -> GpuTelemetry {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn apu_role_survives_edp_renumbering_and_mux_routing() {
+        let panel = vec!["eDP-2".to_owned()];
+        assert!(!super::classify_discrete_gpu("1002:1681", "AMD/ATI Rembrandt", true, &panel));
+        assert!(!super::classify_discrete_gpu("1002:1681", "Rembrandt", true, &[]));
+        assert!(super::classify_discrete_gpu("10DE:28E0", "GeForce RTX 4060", false, &panel));
+        assert!(super::classify_discrete_gpu("1002:73DF", "Radeon RX 6800", false, &panel));
+    }
+
+    #[test]
+    fn amd_vendor_name_alone_is_not_a_discrete_model() {
+        assert!(!super::lspci_dgpu_check("AMD/ATI Rembrandt"));
+        assert!(super::lspci_dgpu_check("AMD/ATI Radeon RX 7600"));
+    }
+
     use std::fs;
 
     use super::*;

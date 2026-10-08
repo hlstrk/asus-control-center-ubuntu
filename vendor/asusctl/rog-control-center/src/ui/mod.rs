@@ -15,6 +15,7 @@ use config_traits::StdConfig;
 use log::{error, warn};
 use rog_dbus::list_iface_blocking;
 use slint::{ComponentHandle, SharedString, Weak};
+use slint::winit_030::{WinitWindowAccessor, winit::window::ResizeDirection};
 
 use crate::config::Config;
 use crate::shortcuts::{EnableMode, ShortcutHandle, ShortcutStatus};
@@ -139,6 +140,28 @@ pub fn setup_window(
         .map_err(|e| warn!("Couldn't set application ID: {e:?}"))
         .ok();
     let ui = MainWindow::new().expect("Couldn't create main window");
+    let weak = ui.as_weak();
+    ui.on_drag_window(move || {
+        if let Some(ui) = weak.upgrade() { ui.window().with_winit_window(|w| { if let Err(error) = w.drag_window() { warn!("Native window move failed: {error}"); } }); }
+    });
+    let weak = ui.as_weak();
+    ui.on_resize_window(move || {
+        if let Some(ui) = weak.upgrade() { ui.window().with_winit_window(|w| { if let Err(error) = w.drag_resize_window(ResizeDirection::SouthEast) { warn!("Native resize failed: {error}"); } }); }
+    });
+    let weak = ui.as_weak();
+    let closed_state = app_state.clone();
+    ui.on_close_window(move || {
+        if let Some(ui) = weak.upgrade() {
+            let _ = ui.window().hide();
+            if let Ok(mut state) = closed_state.lock() { *state = AppState::MainWindowClosed; }
+        }
+    });
+
+    ui.on_open_url(|url| {
+        if let Err(error) = std::process::Command::new("xdg-open").arg(url.as_str()).spawn() {
+            warn!("Could not open project link: {error}");
+        }
+    });
     // propagate TUF flag to the UI so the sidebar can swap logo branding
     ui.set_is_tuf(is_tuf);
     if let Err(e) = ui.window().show() {

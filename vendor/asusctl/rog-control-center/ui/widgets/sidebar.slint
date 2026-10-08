@@ -57,7 +57,7 @@ export component SideBar inherits Rectangle {
     in property <[string]> model: [];
     in property <[bool]> available: [];
     in property <bool> is_tuf: false;
-    out property <int> current-item: 0;
+    in-out property <int> current-item: 0;
     out property <int> current-focused: fs.has-focus ? fs.focused-tab : -1;
 
     // The currently focused tab
@@ -66,7 +66,7 @@ export component SideBar inherits Rectangle {
     accessible-role: tab;
     accessible-delegate-focus: root.current-focused >= 0 ? root.current-focused : root.current-item;
     Rectangle {
-        background: #191d22;
+        background: #191d22e8;
         fs := FocusScope {
             key-pressed(event) => {
                 if (event.text == "\n") {

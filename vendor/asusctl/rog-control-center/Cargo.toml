@@ -47,7 +47,7 @@ thiserror.workspace = true
 udev.workspace = true
 serde_json.workspace = true
 
-slint.workspace = true
+slint = { workspace = true, features = ["unstable-winit-030"] }
 
 [build-dependencies]
 slint-build.workspace = true

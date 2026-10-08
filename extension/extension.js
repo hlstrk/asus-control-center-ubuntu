@@ -34,7 +34,10 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
         titles.add_child(new St.Label({text: 'ASUS Control Center', style_class: 'asus-title'}));
         titles.add_child(new St.Label({text: 'PERFORMANCE PROFILES', style_class: 'asus-subtitle'}));
         heading.add_child(titles);
-        heading.add_child(new St.Icon({icon_name: 'preferences-system-symbolic', style_class: 'asus-heading-icon'}));
+        const openButton = new St.Button({style_class: 'asus-open-button', can_focus: true, accessible_name: 'Open ASUS Control Center'});
+        openButton.set_child(new St.Icon({icon_name: 'preferences-system-symbolic', style_class: 'asus-heading-icon'}));
+        openButton.connect('clicked', () => { this.menu.close(); this._openControlCenter(); });
+        heading.add_child(openButton);
         body.add_child(heading);
 
         this._selector = new St.Widget({width: 390, height: 72, layout_manager: new Clutter.FixedLayout(), style_class: 'asus-selector'});
@@ -68,7 +71,7 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
         item.add_child(body);
         this.menu.addMenuItem(item);
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        this.menu.addAction('Open ROG Control Center', () => this._openControlCenter());
+        this.menu.addAction('Open ASUS Control Center', () => this._openControlCenter());
         this.menu.connect('open-state-changed', (_menu, open) => { if (open) this._poll(); });
         this._poll();
         this._timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 2, () => {
